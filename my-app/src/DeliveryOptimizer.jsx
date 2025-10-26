@@ -1,0 +1,679 @@
+import React, { useState } from 'react';
+import { Truck, Package, MapPin, Calendar, Clock, TrendingUp, AlertCircle, CheckCircle, Navigation, Zap, Box, PieChart, AlertTriangle } from 'lucide-react';
+
+
+const WEBHOOK_URL = import.meta.env.VITE_REACT_APP_WEBHOOK_URL; 
+const AUTH_TOKEN = import.meta.env.VITE_REACT_APP_AUTH_TOKEN; 
+
+const DeliveryOptimizer = () => {
+  const [orders, setOrders] = useState('');
+  const [maxVolume, setMaxVolume] = useState(30); // ✅ Updated default to 50m³
+  const [allowOrderSplitting, setAllowOrderSplitting] = useState(true); // ✅ NEW
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('input');
+
+  const handleOptimize = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      let ordersData;
+      try {
+        ordersData = JSON.parse(orders);
+      } catch (e) {
+        console.error('JSON parse error:', e);
+        throw new Error('Format JSON invalide. Veuillez vérifier votre saisie.');
+      }
+
+      const payload = {
+        orders: Array.isArray(ordersData.orders) ? ordersData.orders : ordersData, // ✅ Changed from 'response' to 'orders'
+        maxVolume: parseFloat(maxVolume), // ✅ Changed from maxBikes
+        allowOrderSplitting: allowOrderSplitting // ✅ NEW
+      };
+
+      console.log('Sending payload:', payload);
+      console.log("WEBHOOK_URL:", WEBHOOK_URL);
+console.log("AUTH_TOKEN:", AUTH_TOKEN);
+
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${AUTH_TOKEN}`, 
+        },
+        mode: 'cors',
+        body: JSON.stringify(payload)
+      });
+
+      console.log('Response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erreur serveur (${response.status}): ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Response data:', data);
+      setResults(data);
+      setActiveTab('results');
+    } catch (err) {
+      console.error('Error details:', err);
+      if (err.message.includes('Failed to fetch')) {
+        setError('Impossible de se connecter au serveur n8n. Vérifiez:\n1. Que le workflow n8n est actif\n2. Que CORS est activé dans les paramètres du webhook\n3. Que l\'URL est correcte');
+      } else {
+        setError(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const translateUrgency = (level) => {
+    const translations = {
+      'CRITICAL': 'CRITIQUE',
+      'HIGH': 'ÉLEVÉE',
+      'MEDIUM': 'MOYENNE',
+      'LOW': 'FAIBLE'
+    };
+    return translations[level] || level;
+  };
+
+  const getUrgencyColor = (level) => {
+    switch(level) {
+      case 'CRITICAL': return 'bg-red-100 text-red-800 border-red-300';
+      case 'HIGH': return 'bg-orange-100 text-orange-800 border-orange-300';
+      case 'MEDIUM': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      default: return 'bg-green-100 text-green-800 border-green-300';
+    }
+  };
+
+  const exampleData = [
+    {
+      "id": 10115,
+      "number": "10115",
+      "status": "ready for delivery",
+      "date_created": "2025-10-21T08:35:21",
+      "shipping_date": "2025-10-29T08:35:21",
+      "total": "35708500",
+      "shipping_total": "500",
+      "payment_method_title": "Forfait",
+      "billing": {
+        "first_name": "Lydia",
+        "last_name": "Benzemrane",
+        "address_1": "Rue des Martyrs, Cite Essalem",
+        "city": "Alger",
+        "email": "lydia.benzemrane@gmail.com",
+        "phone": "0791248060"
+      },
+      "line_items": [
+        {
+          "name": "TRK 502X",
+          "sku": "TRK 02X",
+          "quantity": 17,
+          "price": 2100500,
+          "volume_m3": 2.8
+        }
+      ],
+      "shipping_lines": [
+        {
+          "method_title": "EURL MOTO TEAM > BOUZAREAH"
+        }
+      ]
+    },
+    {
+      "id": 10116,
+      "number": "10116",
+      "status": "ready for delivery",
+      "date_created": "2025-10-21T09:15:42",
+      "shipping_date": "2025-10-27T09:15:42",
+      "total": "1850500",
+      "shipping_total": "500",
+      "payment_method_title": "Paiement à la livraison",
+      "billing": {
+        "first_name": "Ahmed",
+        "last_name": "Benali",
+        "address_1": "Cite 120 logements",
+        "city": "Alger",
+        "email": "ahmed.benali@email.dz",
+        "phone": "0551234567"
+      },
+      "line_items": [
+        {
+          "name": "TRK 251",
+          "sku": "TRK 251",
+          "quantity": 1,
+          "price": 1850000,
+          "volume_m3": 2.2
+        }
+      ],
+      "shipping_lines": [
+        {
+          "method_title": "EURL MOTO TEAM > KOUBA"
+        }
+      ]
+    },
+    {
+      "id": 10117,
+      "number": "10117",
+      "status": "ready for delivery",
+      "date_created": "2025-10-21T10:22:33",
+      "shipping_date": "2025-10-25T10:22:33",
+      "total": "21000000",
+      "shipping_total": "500",
+      "payment_method_title": "Paiement à la livraison",
+      "billing": {
+        "first_name": "Fatima",
+        "last_name": "Zohra",
+        "address_1": "Residence El Feth, Bt 12",
+        "city": "Alger",
+        "email": "fatima.zohra@gmail.com",
+        "phone": "0771234567"
+      },
+      "line_items": [
+        {
+          "name": "TRK 502X",
+          "sku": "TRK 02X",
+          "quantity": 10,
+          "price": 2100000,
+          "volume_m3": 2.8
+        }
+      ],
+      "shipping_lines": [
+        {
+          "method_title": "EURL MOTO TEAM > BAB EZZOUAR"
+        }
+      ]
+    },
+    {
+      "id": 10118,
+      "number": "10118",
+      "status": "ready for delivery",
+      "date_created": "2025-10-21T11:45:15",
+      "shipping_date": "2025-10-23T11:45:15",
+      "total": "1650500",
+      "shipping_total": "500",
+      "payment_method_title": "Forfait",
+      "billing": {
+        "first_name": "Karim",
+        "last_name": "Messaoudi",
+        "address_1": "Lotissement Les Pins",
+        "city": "Alger",
+        "email": "k.messaoudi@outlook.com",
+        "phone": "0661234567"
+      },
+      "line_items": [
+        {
+          "name": "TNT 150",
+          "sku": "TNT 150",
+          "quantity": 1,
+          "price": 1650000,
+          "volume_m3": 1.8
+        }
+      ],
+      "shipping_lines": [
+        {
+          "method_title": "EURL MOTO TEAM > CHERAGA"
+        }
+      ]
+    },
+    {
+      "id": 10119,
+      "number": "10119",
+      "status": "ready for delivery",
+      "date_created": "2025-10-21T12:30:55",
+      "shipping_date": "2025-10-31T12:30:55",
+      "total": "6300000",
+      "shipping_total": "500",
+      "payment_method_title": "Paiement à la livraison",
+      "billing": {
+        "first_name": "Sofiane",
+        "last_name": "Bencheikh",
+        "address_1": "Cooperative Agricole",
+        "city": "Alger",
+        "email": "sofiane.bencheikh@yahoo.fr",
+        "phone": "0541234567"
+      },
+      "line_items": [
+        {
+          "name": "TRK 502X",
+          "sku": "TRK 02X",
+          "quantity": 3,
+          "price": 2100000,
+          "volume_m3": 2.8
+        }
+      ],
+      "shipping_lines": [
+        {
+          "method_title": "EURL MOTO TEAM > ZERALDA"
+        }
+      ]
+    },
+    {
+      "id": 10120,
+      "number": "10120",
+      "status": "ready for delivery",
+      "date_created": "2025-10-21T13:20:10",
+      "shipping_date": "2025-10-31T13:20:10",
+      "total": "3700000",
+      "shipping_total": "500",
+      "payment_method_title": "Paiement à la livraison",
+      "billing": {
+        "first_name": "Samira",
+        "last_name": "Khelifi",
+        "address_1": "Rue Didouche Mourad",
+        "city": "Alger",
+        "email": "s.khelifi@hotmail.com",
+        "phone": "0781234567"
+      },
+      "line_items": [
+        {
+          "name": "TRK 251",
+          "sku": "TRK 251",
+          "quantity": 2,
+          "price": 1850000,
+          "volume_m3": 2.2
+        }
+      ],
+      "shipping_lines": [
+        {
+          "method_title": "EURL MOTO TEAM > STAOUELI"
+        }
+      ]
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="bg-white shadow-lg border-b border-indigo-100">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="bg-gradient-to-br from-indigo-600 to-purple-600 p-3 rounded-xl shadow-lg">
+                <Navigation className="text-white" size={32} />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Optimisation des Itinéraires de Livraison
+                </h1>
+                <p className="text-gray-600 mt-1">Système intelligent de gestion de tournées basé sur le volume</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setActiveTab('input')}
+                className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                  activeTab === 'input'
+                    ? 'bg-indigo-600 text-white shadow-lg'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                }`}
+              >
+                Configuration
+              </button>
+              <button
+                onClick={() => setActiveTab('results')}
+                disabled={!results}
+                className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                  activeTab === 'results' && results
+                    ? 'bg-indigo-600 text-white shadow-lg'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 disabled:opacity-50'
+                }`}
+              >
+                Résultats 
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {activeTab === 'input' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-2xl shadow-xl p-6 border border-indigo-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <Box className="text-indigo-600" size={24} />
+                  <h3 className="text-lg font-semibold text-gray-800">Capacité du Plateau</h3>
+                </div>
+                <label className="block text-sm text-gray-600 mb-2">
+                  Volume maximal du plateau (m³)
+                </label>
+                <input
+                  type="number"
+                  value={maxVolume}
+                  onChange={(e) => setMaxVolume(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 transition-all"
+                  min="1"
+                  step="0.1"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Le volume total que peut contenir le plateau de livraison
+                </p>
+              </div>
+
+              {/* ✅ NEW: Order Splitting Toggle */}
+              <div className="bg-white rounded-2xl shadow-xl p-6 border border-indigo-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <PieChart className="text-indigo-600" size={24} />
+                  <h3 className="text-lg font-semibold text-gray-800">Division des Commandes</h3>
+                </div>
+                <label className="flex items-center cursor-pointer">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={allowOrderSplitting}
+                      onChange={(e) => setAllowOrderSplitting(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <div className={`block w-14 h-8 rounded-full transition-all ${allowOrderSplitting ? 'bg-indigo-600' : 'bg-gray-300'}`}></div>
+                    <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-all ${allowOrderSplitting ? 'transform translate-x-6' : ''}`}></div>
+                  </div>
+                  <div className="ml-3">
+                    <span className="text-sm font-medium text-gray-800">
+                      {allowOrderSplitting ? 'Activé' : 'Désactivé'}
+                    </span>
+                  </div>
+                </label>
+                <p className="text-xs text-gray-500 mt-3">
+                  Permet de diviser les commandes pour optimiser l'utilisation du plateau
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-xl p-6 border border-indigo-100">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Truck className="text-indigo-600" size={24} />
+                  <h3 className="text-lg font-semibold text-gray-800">Commandes à Optimiser</h3>
+                </div>
+                <button
+                  onClick={() => setOrders(JSON.stringify(exampleData, null, 2))}
+                  className="px-4 py-2 text-sm bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all"
+                >
+                  Charger exemple
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">
+                Collez vos données de commandes au format JSON (depuis WooCommerce ou votre système). 
+                <span className="font-semibold text-indigo-600"> Assurez-vous que chaque produit inclut volume_m3.</span>
+              </p>
+              <textarea
+                value={orders}
+                onChange={(e) => setOrders(e.target.value)}
+                placeholder='[{"id": 10115, "status": "ready for delivery", "line_items": [{"volume_m3": 2.8, ...}], ...}]'
+                className="w-full h-96 px-4 py-3 border-2 border-indigo-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 font-mono text-sm transition-all"
+              />
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+                <div className="flex-1">
+                  <h4 className="font-semibold text-red-800">Erreur</h4>
+                  <p className="text-red-700 text-sm mt-1 whitespace-pre-line">{error}</p>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={handleOptimize}
+              disabled={loading || !orders}
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                  Optimisation en cours...
+                </>
+              ) : (
+                <>
+                  <Zap size={20} />
+                  Optimiser les Tournées
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {activeTab === 'results' && results && (
+          <div className="space-y-6">
+            {/* ✅ UPDATED: Stats Grid with Volume */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-6 text-white">
+                <div className="flex items-center justify-between mb-2">
+                  <Truck size={24} className="opacity-80" />
+                  <TrendingUp size={20} className="opacity-60" />
+                </div>
+                <div className="text-3xl font-bold mb-1">{results.summary.totalBatches}</div>
+                <div className="text-blue-100 text-sm">Tournées créées</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white">
+                <div className="flex items-center justify-between mb-2">
+                  <Package size={24} className="opacity-80" />
+                </div>
+                <div className="text-3xl font-bold mb-1">{results.summary.totalOrders}</div>
+                <div className="text-purple-100 text-sm">Commandes optimisées</div>
+              </div>
+
+              {/* ✅ NEW: Volume Card */}
+              <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl shadow-xl p-6 text-white">
+                <div className="flex items-center justify-between mb-2">
+                  <Box size={24} className="opacity-80" />
+                </div>
+                <div className="text-3xl font-bold mb-1">{results.summary.totalVolume} m³</div>
+                <div className="text-cyan-100 text-sm">Volume total</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-xl p-6 text-white">
+                <div className="flex items-center justify-between mb-2">
+                  <MapPin size={24} className="opacity-80" />
+                </div>
+                <div className="text-3xl font-bold mb-1">{results.summary.totalDistance.toFixed(1)} km</div>
+                <div className="text-green-100 text-sm">Distance totale</div>
+              </div>
+
+              {/* ✅ NEW: Split Orders Card */}
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-xl p-6 text-white">
+                <div className="flex items-center justify-between mb-2">
+                  <PieChart size={24} className="opacity-80" />
+                </div>
+                <div className="text-3xl font-bold mb-1">{results.summary.totalSplitOrders || 0}</div>
+                <div className="text-orange-100 text-sm">Commandes divisées</div>
+              </div>
+            </div>
+
+            {/* ✅ NEW: Insights Section */}
+            {results.insights && (
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border-2 border-indigo-200">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <TrendingUp className="text-indigo-600" size={20} />
+                  Insights d'Optimisation
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white rounded-xl p-4 shadow-sm">
+                    <div className="text-sm text-gray-600 mb-1">Utilisation moyenne du plateau</div>
+                    <div className="text-2xl font-bold text-indigo-600">{results.summary.avgVolumeUtilization}%</div>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 shadow-sm">
+                    <div className="text-sm text-gray-600 mb-1">Tournée la plus efficace</div>
+                    <div className="text-2xl font-bold text-green-600">{results.insights.mostEfficientBatch}</div>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 shadow-sm">
+                    <div className="text-sm text-gray-600 mb-1">Tournées critiques</div>
+                    <div className="text-2xl font-bold text-red-600">{results.insights.criticalBatches}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {results.batches.map((batch) => (
+                <div key={batch.batchId} className="bg-white rounded-2xl shadow-xl border border-indigo-100 overflow-hidden">
+                  <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 text-white">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg font-mono font-bold">
+                          {batch.batchId}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-lg">Tournée #{batch.batchNumber}</div>
+                          <div className="text-indigo-100 text-sm">
+                            {batch.totalOrders} livraisons • {batch.uniqueZones} zones
+                            {batch.splitOrders > 0 && ` • ${batch.splitOrders} commande(s) divisée(s)`}
+                          </div>
+                        </div>
+                      </div>
+                      <div className={`px-4 py-2 rounded-lg border-2 font-semibold ${getUrgencyColor(batch.batchUrgencyLevel)}`}>
+                        {translateUrgency(batch.batchUrgencyLevel)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ✅ UPDATED: Batch Stats with Volume */}
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-6 bg-gray-50 border-b border-gray-200">
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Motos</div>
+                      <div className="text-2xl font-bold text-gray-800">{batch.totalBikes}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Volume</div>
+                      <div className="text-2xl font-bold text-gray-800">{batch.totalVolume} m³</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Utilisation</div>
+                      <div className="text-2xl font-bold text-gray-800">{batch.volumeUtilization}%</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Distance</div>
+                      <div className="text-2xl font-bold text-gray-800">{batch.totalDistance} km</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Montant total</div>
+                      <div className="text-lg font-bold text-gray-800">{batch.totalAmount.toLocaleString()} DA</div>
+                    </div>
+                  </div>
+
+                  <div className="p-6">
+                    <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <Navigation size={18} className="text-indigo-600" />
+                      Itinéraire de livraison
+                    </h4>
+                    <div className="space-y-3">
+                      {batch.deliveryRoute.map((stop) => (
+                        <div key={`${stop.orderId}-${stop.stopNumber}`} className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all">
+                          <div className="flex-shrink-0 w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">
+                            {stop.stopNumber}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-4 mb-2">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <div className="font-semibold text-gray-800">{stop.customerName}</div>
+                                  {/* ✅ NEW: Split Order Indicator */}
+                                  {stop.isPartialDelivery && (
+                                    <span className="px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-700 rounded-md flex items-center gap-1">
+                                      <PieChart size={12} />
+                                      Livraison partielle
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-sm text-gray-600">{stop.customerAddress} • {stop.zone}</div>
+                                <div className="text-sm text-gray-500 mt-1">{stop.customerPhone}</div>
+                              </div>
+                              <div className={`px-3 py-1 rounded-lg text-xs font-semibold border ${getUrgencyColor(stop.urgencyLevel)}`}>
+                                {translateUrgency(stop.urgencyLevel)}
+                              </div>
+                            </div>
+
+                            {/* ✅ NEW: Split Order Details */}
+                            {stop.splitInfo && (
+                              <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                                <div className="flex items-center gap-2 text-sm text-orange-800 mb-1">
+                                  <AlertTriangle size={14} />
+                                  <span className="font-semibold">
+                                    Partie {stop.splitInfo.partNumber}/{stop.splitInfo.totalParts} de la commande
+                                  </span>
+                                </div>
+                                <div className="text-xs text-orange-700 space-y-1">
+                                  <div>• Motos dans cette livraison: {stop.splitInfo.bikesInThisPart}</div>
+                                  {stop.splitInfo.bikesRemaining && (
+                                    <div>• Motos restantes: {stop.splitInfo.bikesRemaining} (livraison ultérieure)</div>
+                                  )}
+                                  {stop.splitInfo.bikesFromPreviousPart && (
+                                    <div>• Motos précédentes: {stop.splitInfo.bikesFromPreviousPart} (déjà livrées)</div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ✅ UPDATED: Stop Info Grid with Volume */}
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-3 text-sm">
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Package size={14} />
+                                <span>
+                                  {stop.bikesDelivered} moto(s)
+                                  {stop.bikesRemaining > 0 && (
+                                    <span className="text-orange-600 font-semibold"> ({stop.bikesRemaining} restantes)</span>
+                                  )}
+                                </span>
+                              </div>
+                              {/* ✅ NEW: Volume Display */}
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Box size={14} />
+                                <span>{stop.volume} m³</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <MapPin size={14} />
+                                <span>{stop.distance} km</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Calendar size={14} />
+                                <span>{stop.daysUntilDelivery}j restants</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600 font-semibold">
+                                {stop.amount.toLocaleString()} DA
+                                {stop.isPartialDelivery && (
+                                  <span className="text-xs text-gray-500">/{stop.totalOrderAmount.toLocaleString()}</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="mt-2 text-xs text-gray-500">
+                              {stop.products.map(p => `${p.name} (x${p.quantity}${p.volume_m3 ? `, ${p.volume_m3}m³` : ''})`).join(', ')}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {results.skippedOrders && results.skippedOrders.length > 0 && (
+              <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <AlertCircle className="text-yellow-600" size={24} />
+                  <h3 className="text-lg font-semibold text-yellow-800">
+                    Commandes non traitées ({results.skippedOrders.length})
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  {results.skippedOrders.map((order, idx) => (
+                    <div key={idx} className="text-sm text-yellow-800 bg-white p-3 rounded-lg">
+                      <span className="font-semibold">Commande #{order.orderId}:</span> {order.reason}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default DeliveryOptimizer;

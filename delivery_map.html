@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Delivery Routes - Béjaïa Warehouse</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 100vh; width: 100vw; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // --- WAREHOUSE LOCATION ---
+    const WAREHOUSE_LOCATION = { lat: 36.754848005240774, lng: 4.926667247914838 }; // Béjaïa
+
+    // --- ZONE COORDINATES ---
+    const ZONE_COORDINATES = {
+      "BOUZAREAH": { lat: 36.7833, lng: 3.0167 },
+      "ALGER CENTRE": { lat: 36.7538, lng: 3.0588 },
+      "BAB EZZOUAR": { lat: 36.7167, lng: 3.1833 },
+      "CHERAGA": { lat: 36.7667, lng: 2.9500 },
+      "DRARIA": { lat: 36.7167, lng: 2.9833 },
+      "BIRTOUTA": { lat: 36.6333, lng: 2.9833 },
+      "ZERALDA": { lat: 36.7000, lng: 2.8333 },
+      "STAOUELI": { lat: 36.7500, lng: 2.8833 },
+      "KOUBA": { lat: 36.7333, lng: 3.0667 },
+      "BACHDJARRAH": { lat: 36.7167, lng: 3.1167 }
+    };
+
+    // --- DELIVERY BATCHES ---
+    const batches = [
+      {
+        id: "BATCH-001",
+        color: "red",
+        deliveries: ["CHERAGA", "BAB EZZOUAR"]
+      },
+      {
+        id: "BATCH-002",
+        color: "orange",
+        deliveries: ["KOUBA", "BOUZAREAH"]
+      },
+      {
+        id: "BATCH-003",
+        color: "green",
+        deliveries: ["BOUZAREAH", "ZERALDA"]
+      },
+      {
+        id: "BATCH-004",
+        color: "blue",
+        deliveries: ["ZERALDA", "STAOUELI"]
+      }
+    ];
+
+    // --- INIT MAP ---
+    const map = L.map('map').setView([36.75, 3.0], 7); // Center on Algeria
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // --- ADD WAREHOUSE MARKER ---
+    L.marker([WAREHOUSE_LOCATION.lat, WAREHOUSE_LOCATION.lng])
+      .addTo(map)
+      .bindPopup("<b>Warehouse</b><br>Béjaïa");
+
+    // --- ADD ROUTES & MARKERS ---
+    batches.forEach(batch => {
+      const points = [WAREHOUSE_LOCATION, ...batch.deliveries.map(z => ZONE_COORDINATES[z])];
+      
+      // Draw route line
+      const route = L.polyline(points.map(p => [p.lat, p.lng]), {
+        color: batch.color,
+        weight: 3,
+        opacity: 0.8
+      }).addTo(map);
+      
+      // Add delivery markers
+      batch.deliveries.forEach(zone => {
+        const { lat, lng } = ZONE_COORDINATES[zone];
+        L.circleMarker([lat, lng], {
+          radius: 6,
+          color: batch.color,
+          fillOpacity: 0.9
+        })
+        .addTo(map)
+        .bindPopup(`<b>${zone}</b><br>${batch.id}`);
+      });
+    });
+  </script>
+</body>
+</html>
