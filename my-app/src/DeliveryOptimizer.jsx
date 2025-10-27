@@ -91,199 +91,209 @@ console.log("AUTH_TOKEN:", AUTH_TOKEN);
   };
 
   const exampleData = [
-    {
-      "id": 10115,
-      "number": "10115",
-      "status": "ready for delivery",
-      "date_created": "2025-10-21T08:35:21",
-      "shipping_date": "2025-10-29T08:35:21",
-      "total": "35708500",
-      "shipping_total": "500",
-      "payment_method_title": "Forfait",
-      "billing": {
-        "first_name": "Lydia",
-        "last_name": "Benzemrane",
-        "address_1": "Rue des Martyrs, Cite Essalem",
-        "city": "Alger",
-        "email": "lydia.benzemrane@gmail.com",
-        "phone": "0791248060"
-      },
-      "line_items": [
-        {
-          "name": "TRK 502X",
-          "sku": "TRK 02X",
-          "quantity": 17,
-          "price": 2100500,
-          "volume_m3": 2.8
-        }
-      ],
-      "shipping_lines": [
-        {
-          "method_title": "EURL MOTO TEAM > BOUZAREAH"
-        }
-      ]
+  {
+    "id": 10115,
+    "number": "10115",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T08:35:21",
+    "shipping_date": "2025-10-29T08:35:21",
+    "total": "35708500",
+    "shipping_total": "500",
+    "payment_method_title": "Forfait",
+    "billing": {
+      "first_name": "Lydia",
+      "last_name": "Benzemrane",
+      "address_1": "Rue des Martyrs, Cite Essalem",
+      "city": "Alger",
+      "email": "lydia.benzemrane@gmail.com",
+      "phone": "0791248060"
     },
-    {
-      "id": 10116,
-      "number": "10116",
-      "status": "ready for delivery",
-      "date_created": "2025-10-21T09:15:42",
-      "shipping_date": "2025-10-27T09:15:42",
-      "total": "1850500",
-      "shipping_total": "500",
-      "payment_method_title": "Paiement à la livraison",
-      "billing": {
-        "first_name": "Ahmed",
-        "last_name": "Benali",
-        "address_1": "Cite 120 logements",
-        "city": "Alger",
-        "email": "ahmed.benali@email.dz",
-        "phone": "0551234567"
-      },
-      "line_items": [
-        {
-          "name": "TRK 251",
-          "sku": "TRK 251",
-          "quantity": 1,
-          "price": 1850000,
-          "volume_m3": 2.2
-        }
-      ],
-      "shipping_lines": [
-        {
-          "method_title": "EURL MOTO TEAM > KOUBA"
-        }
-      ]
+    "line_items": [
+      {
+        "name": "TRK 502X",
+        "sku": "TRK 02X",
+        "quantity": 17,
+        "price": 2100500,
+        "width_cm": 230,
+        "height_cm": 140,
+        "length_cm": 87
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "EURL MOTO TEAM > BOUZAREAH"
+      }
+    ]
+  },
+  {
+    "id": 10116,
+    "number": "10116",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T09:15:42",
+    "shipping_date": "2025-10-27T09:15:42",
+    "total": "1850500",
+    "shipping_total": "500",
+    "payment_method_title": "Paiement à la livraison",
+    "billing": {
+      "first_name": "Ahmed",
+      "last_name": "Benali",
+      "address_1": "Cite 120 logements",
+      "city": "Alger",
+      "email": "ahmed.benali@email.dz",
+      "phone": "0551234567"
     },
-    {
-      "id": 10117,
-      "number": "10117",
-      "status": "ready for delivery",
-      "date_created": "2025-10-21T10:22:33",
-      "shipping_date": "2025-10-25T10:22:33",
-      "total": "21000000",
-      "shipping_total": "500",
-      "payment_method_title": "Paiement à la livraison",
-      "billing": {
-        "first_name": "Fatima",
-        "last_name": "Zohra",
-        "address_1": "Residence El Feth, Bt 12",
-        "city": "Alger",
-        "email": "fatima.zohra@gmail.com",
-        "phone": "0771234567"
-      },
-      "line_items": [
-        {
-          "name": "TRK 502X",
-          "sku": "TRK 02X",
-          "quantity": 10,
-          "price": 2100000,
-          "volume_m3": 2.8
-        }
-      ],
-      "shipping_lines": [
-        {
-          "method_title": "EURL MOTO TEAM > BAB EZZOUAR"
-        }
-      ]
+    "line_items": [
+      {
+        "name": "TRK 251",
+        "sku": "TRK 251",
+        "quantity": 1,
+        "price": 1850000,
+        "width_cm": 220,
+        "height_cm": 125,
+        "length_cm": 80
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "EURL MOTO TEAM > KOUBA"
+      }
+    ]
+  },
+  {
+    "id": 10117,
+    "number": "10117",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T10:22:33",
+    "shipping_date": "2025-10-25T10:22:33",
+    "total": "21000000",
+    "shipping_total": "500",
+    "payment_method_title": "Paiement à la livraison",
+    "billing": {
+      "first_name": "Fatima",
+      "last_name": "Zohra",
+      "address_1": "Residence El Feth, Bt 12",
+      "city": "Alger",
+      "email": "fatima.zohra@gmail.com",
+      "phone": "0771234567"
     },
-    {
-      "id": 10118,
-      "number": "10118",
-      "status": "ready for delivery",
-      "date_created": "2025-10-21T11:45:15",
-      "shipping_date": "2025-10-23T11:45:15",
-      "total": "1650500",
-      "shipping_total": "500",
-      "payment_method_title": "Forfait",
-      "billing": {
-        "first_name": "Karim",
-        "last_name": "Messaoudi",
-        "address_1": "Lotissement Les Pins",
-        "city": "Alger",
-        "email": "k.messaoudi@outlook.com",
-        "phone": "0661234567"
-      },
-      "line_items": [
-        {
-          "name": "TNT 150",
-          "sku": "TNT 150",
-          "quantity": 1,
-          "price": 1650000,
-          "volume_m3": 1.8
-        }
-      ],
-      "shipping_lines": [
-        {
-          "method_title": "EURL MOTO TEAM > CHERAGA"
-        }
-      ]
+    "line_items": [
+      {
+        "name": "TRK 502X",
+        "sku": "TRK 02X",
+        "quantity": 10,
+        "price": 2100000,
+        "volume_m3": 2.8
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "EURL MOTO TEAM > BAB EZZOUAR"
+      }
+    ]
+  },
+  {
+    "id": 10118,
+    "number": "10118",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T11:45:15",
+    "shipping_date": "2025-10-23T11:45:15",
+    "total": "1650500",
+    "shipping_total": "500",
+    "payment_method_title": "Forfait",
+    "billing": {
+      "first_name": "Karim",
+      "last_name": "Messaoudi",
+      "address_1": "Lotissement Les Pins",
+      "city": "Alger",
+      "email": "k.messaoudi@outlook.com",
+      "phone": "0661234567"
     },
-    {
-      "id": 10119,
-      "number": "10119",
-      "status": "ready for delivery",
-      "date_created": "2025-10-21T12:30:55",
-      "shipping_date": "2025-10-31T12:30:55",
-      "total": "6300000",
-      "shipping_total": "500",
-      "payment_method_title": "Paiement à la livraison",
-      "billing": {
-        "first_name": "Sofiane",
-        "last_name": "Bencheikh",
-        "address_1": "Cooperative Agricole",
-        "city": "Alger",
-        "email": "sofiane.bencheikh@yahoo.fr",
-        "phone": "0541234567"
-      },
-      "line_items": [
-        {
-          "name": "TRK 502X",
-          "sku": "TRK 02X",
-          "quantity": 3,
-          "price": 2100000,
-          "volume_m3": 2.8
-        }
-      ],
-      "shipping_lines": [
-        {
-          "method_title": "EURL MOTO TEAM > ZERALDA"
-        }
-      ]
+    "line_items": [
+      {
+        "name": "TNT 150",
+        "sku": "TNT 150",
+        "quantity": 1,
+        "price": 1650000,
+        "width_cm": 200,
+        "height_cm": 110,
+        "length_cm": 82
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "EURL MOTO TEAM > CHERAGA"
+      }
+    ]
+  },
+  {
+    "id": 10119,
+    "number": "10119",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T12:30:55",
+    "shipping_date": "2025-10-31T12:30:55",
+    "total": "6300000",
+    "shipping_total": "500",
+    "payment_method_title": "Paiement à la livraison",
+    "billing": {
+      "first_name": "Sofiane",
+      "last_name": "Bencheikh",
+      "address_1": "Cooperative Agricole",
+      "city": "Alger",
+      "email": "sofiane.bencheikh@yahoo.fr",
+      "phone": "0541234567"
     },
-    {
-      "id": 10120,
-      "number": "10120",
-      "status": "ready for delivery",
-      "date_created": "2025-10-21T13:20:10",
-      "shipping_date": "2025-10-31T13:20:10",
-      "total": "3700000",
-      "shipping_total": "500",
-      "payment_method_title": "Paiement à la livraison",
-      "billing": {
-        "first_name": "Samira",
-        "last_name": "Khelifi",
-        "address_1": "Rue Didouche Mourad",
-        "city": "Alger",
-        "email": "s.khelifi@hotmail.com",
-        "phone": "0781234567"
-      },
-      "line_items": [
-        {
-          "name": "TRK 251",
-          "sku": "TRK 251",
-          "quantity": 2,
-          "price": 1850000,
-          "volume_m3": 2.2
-        }
-      ],
-      "shipping_lines": [
-        {
-          "method_title": "EURL MOTO TEAM > STAOUELI"
-        }
-      ]
-    }
-  ];
+    "line_items": [
+      {
+        "name": "TRK 502X",
+        "sku": "TRK 02X",
+        "quantity": 3,
+        "price": 2100000,
+        "width_cm": 230,
+        "height_cm": 140,
+        "length_cm": 87
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "EURL MOTO TEAM > ZERALDA"
+      }
+    ]
+  },
+  {
+    "id": 10120,
+    "number": "10120",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T13:20:10",
+    "shipping_date": "2025-10-31T13:20:10",
+    "total": "3700000",
+    "shipping_total": "500",
+    "payment_method_title": "Paiement à la livraison",
+    "billing": {
+      "first_name": "Samira",
+      "last_name": "Khelifi",
+      "address_1": "Rue Didouche Mourad",
+      "city": "Alger",
+      "email": "s.khelifi@hotmail.com",
+      "phone": "0781234567"
+    },
+    "line_items": [
+      {
+        "name": "TRK 251",
+        "sku": "TRK 251",
+        "quantity": 2,
+        "price": 1850000,
+        "width_cm": 220,
+        "height_cm": 125,
+        "length_cm": 80
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "EURL MOTO TEAM > STAOUELI"
+      }
+    ]
+  }
+];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -397,7 +407,7 @@ console.log("AUTH_TOKEN:", AUTH_TOKEN);
               </div>
               <p className="text-sm text-gray-600 mb-3">
                 Collez vos données de commandes au format JSON (depuis WooCommerce ou votre système). 
-                <span className="font-semibold text-indigo-600"> Assurez-vous que chaque produit inclut volume_m3.</span>
+                <span className="font-semibold text-indigo-600"> Assurez-vous que chaque produit inclut volume_m3 ou les trois dimensions de la moto .</span>
               </p>
               <textarea
                 value={orders}
