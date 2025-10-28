@@ -88,29 +88,29 @@ const DeliveryOptimizer = () => {
     }
   };
 
-  const exampleData = [
+  const exampleData =[
   {
     "id": 10115,
     "number": "10115",
     "status": "ready for delivery",
     "date_created": "2025-10-21T08:35:21",
     "shipping_date": "2025-10-29T08:35:21",
-    "total": "35708500",
-    "shipping_total": "500",
+    "total": "42010500",
+    "shipping_total": "2500",
     "payment_method_title": "Forfait",
     "billing": {
-      "first_name": "Lydia",
-      "last_name": "Benzemrane",
-      "address_1": "Rue des Martyrs, Cite Essalem",
-      "city": "Alger",
-      "email": "lydia.benzemrane@gmail.com",
-      "phone": "0791248060"
+      "first_name": "Rachid",
+      "last_name": "Belkacem",
+      "address_1": "CITE IBN SINA N°75 RUE ABED ZIN",
+      "city": "Oran",
+      "email": "rachid.belkacem@gmail.com",
+      "phone": "0541789456"
     },
     "line_items": [
       {
         "name": "TRK 502X",
         "sku": "TRK 02X",
-        "quantity": 17,
+        "quantity": 20,
         "price": 2100500,
         "width_cm": 230,
         "height_cm": 140,
@@ -119,7 +119,7 @@ const DeliveryOptimizer = () => {
     ],
     "shipping_lines": [
       {
-        "method_title": "EURL MOTO TEAM > BOUZAREAH"
+        "method_title": "CITE IBN SINA N°75 RUE ABED ZIN LOC N°01 ORAN"
       }
     ]
   },
@@ -128,23 +128,23 @@ const DeliveryOptimizer = () => {
     "number": "10116",
     "status": "ready for delivery",
     "date_created": "2025-10-21T09:15:42",
-    "shipping_date": "2025-10-27T09:15:42",
-    "total": "1850500",
-    "shipping_total": "500",
+    "shipping_date": "2025-10-28T09:15:42",
+    "total": "9250000",
+    "shipping_total": "1500",
     "payment_method_title": "Paiement à la livraison",
     "billing": {
-      "first_name": "Ahmed",
-      "last_name": "Benali",
-      "address_1": "Cite 120 logements",
+      "first_name": "Amina",
+      "last_name": "Boukhari",
+      "address_1": "Cite 500 logements AADL",
       "city": "Alger",
-      "email": "ahmed.benali@email.dz",
-      "phone": "0551234567"
+      "email": "amina.boukhari@email.dz",
+      "phone": "0771234589"
     },
     "line_items": [
       {
         "name": "TRK 251",
         "sku": "TRK 251",
-        "quantity": 1,
+        "quantity": 5,
         "price": 1850000,
         "width_cm": 220,
         "height_cm": 125,
@@ -153,7 +153,7 @@ const DeliveryOptimizer = () => {
     ],
     "shipping_lines": [
       {
-        "method_title": "EURL MOTO TEAM > KOUBA"
+        "method_title": "CITE ENTRE NORD EN FACE DE LA STATION SERVICE BAT 1335 PORTE 01 Alger HUSSEIN DEY"
       }
     ]
   },
@@ -162,55 +162,23 @@ const DeliveryOptimizer = () => {
     "number": "10117",
     "status": "ready for delivery",
     "date_created": "2025-10-21T10:22:33",
-    "shipping_date": "2025-10-25T10:22:33",
-    "total": "21000000",
-    "shipping_total": "500",
+    "shipping_date": "2025-10-27T10:22:33",
+    "total": "3300500",
+    "shipping_total": "1000",
     "payment_method_title": "Paiement à la livraison",
     "billing": {
-      "first_name": "Fatima",
-      "last_name": "Zohra",
-      "address_1": "Residence El Feth, Bt 12",
-      "city": "Alger",
-      "email": "fatima.zohra@gmail.com",
-      "phone": "0771234567"
-    },
-    "line_items": [
-      {
-        "name": "TRK 502X",
-        "sku": "TRK 02X",
-        "quantity": 10,
-        "price": 2100000,
-        "volume_m3": 2.8
-      }
-    ],
-    "shipping_lines": [
-      {
-        "method_title": "EURL MOTO TEAM > BAB EZZOUAR"
-      }
-    ]
-  },
-  {
-    "id": 10118,
-    "number": "10118",
-    "status": "ready for delivery",
-    "date_created": "2025-10-21T11:45:15",
-    "shipping_date": "2025-10-23T11:45:15",
-    "total": "1650500",
-    "shipping_total": "500",
-    "payment_method_title": "Forfait",
-    "billing": {
-      "first_name": "Karim",
-      "last_name": "Messaoudi",
-      "address_1": "Lotissement Les Pins",
-      "city": "Alger",
-      "email": "k.messaoudi@outlook.com",
-      "phone": "0661234567"
+      "first_name": "Kamel",
+      "last_name": "Yahiaoui",
+      "address_1": "Zone Industrielle, Lot 45",
+      "city": "Blida",
+      "email": "k.yahiaoui@gmail.com",
+      "phone": "0661234890"
     },
     "line_items": [
       {
         "name": "TNT 150",
         "sku": "TNT 150",
-        "quantity": 1,
+        "quantity": 2,
         "price": 1650000,
         "width_cm": 200,
         "height_cm": 110,
@@ -219,7 +187,41 @@ const DeliveryOptimizer = () => {
     ],
     "shipping_lines": [
       {
-        "method_title": "EURL MOTO TEAM > CHERAGA"
+        "method_title": "LOCAL 05 RUE CHOUHADA CITE BOUDISA Blida CHIFFA"
+      }
+    ]
+  },
+  {
+    "id": 10118,
+    "number": "10118",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T11:45:15",
+    "shipping_date": "2025-10-30T11:45:15",
+    "total": "16503000",
+    "shipping_total": "2000",
+    "payment_method_title": "Forfait",
+    "billing": {
+      "first_name": "Nadia",
+      "last_name": "Benmohamed",
+      "address_1": "RN N°04 Zone d'activité Cne Oued Sly",
+      "city": "Chlef",
+      "email": "nadia.benmohamed@outlook.com",
+      "phone": "0541234777"
+    },
+    "line_items": [
+      {
+        "name": "TRK 502X",
+        "sku": "TRK 02X",
+        "quantity": 8,
+        "price": 2100000,
+        "width_cm": 200,
+        "height_cm": 110,
+        "length_cm": 82
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "RN N°04 Zone d'activité Cne Oued Sly (W) Chlef"
       }
     ]
   },
@@ -228,32 +230,32 @@ const DeliveryOptimizer = () => {
     "number": "10119",
     "status": "ready for delivery",
     "date_created": "2025-10-21T12:30:55",
-    "shipping_date": "2025-10-31T12:30:55",
-    "total": "6300000",
-    "shipping_total": "500",
+    "shipping_date": "2025-10-29T12:30:55",
+    "total": "8250000",
+    "shipping_total": "1200",
     "payment_method_title": "Paiement à la livraison",
     "billing": {
-      "first_name": "Sofiane",
-      "last_name": "Bencheikh",
-      "address_1": "Cooperative Agricole",
+      "first_name": "Youcef",
+      "last_name": "Mansouri",
+      "address_1": "Cité Baranes, Bouzareah",
       "city": "Alger",
-      "email": "sofiane.bencheikh@yahoo.fr",
-      "phone": "0541234567"
+      "email": "youcef.mansouri@yahoo.fr",
+      "phone": "0791456123"
     },
     "line_items": [
       {
-        "name": "TRK 502X",
-        "sku": "TRK 02X",
-        "quantity": 3,
-        "price": 2100000,
-        "width_cm": 230,
-        "height_cm": 140,
-        "length_cm": 87
+        "name": "TNT 150",
+        "sku": "TNT 150",
+        "quantity": 5,
+        "price": 1650000,
+        "width_cm": 200,
+        "height_cm": 110,
+        "length_cm": 82
       }
     ],
     "shipping_lines": [
       {
-        "method_title": "EURL MOTO TEAM > ZERALDA"
+        "method_title": "Cité Baranes, Bouzareah (W) ALGER"
       }
     ]
   },
@@ -262,23 +264,23 @@ const DeliveryOptimizer = () => {
     "number": "10120",
     "status": "ready for delivery",
     "date_created": "2025-10-21T13:20:10",
-    "shipping_date": "2025-10-31T13:20:10",
-    "total": "3700000",
-    "shipping_total": "500",
+    "shipping_date": "2025-10-25T13:20:10",
+    "total": "5550000",
+    "shipping_total": "1000",
     "payment_method_title": "Paiement à la livraison",
     "billing": {
-      "first_name": "Samira",
-      "last_name": "Khelifi",
-      "address_1": "Rue Didouche Mourad",
+      "first_name": "Salima",
+      "last_name": "Djabri",
+      "address_1": "24 ROUT AIN BENIAN",
       "city": "Alger",
-      "email": "s.khelifi@hotmail.com",
-      "phone": "0781234567"
+      "email": "salima.djabri@hotmail.com",
+      "phone": "0661789234"
     },
     "line_items": [
       {
         "name": "TRK 251",
         "sku": "TRK 251",
-        "quantity": 2,
+        "quantity": 3,
         "price": 1850000,
         "width_cm": 220,
         "height_cm": 125,
@@ -287,7 +289,279 @@ const DeliveryOptimizer = () => {
     ],
     "shipping_lines": [
       {
-        "method_title": "EURL MOTO TEAM > STAOUELI"
+        "method_title": "24 ROUT AIN BENIAN CHERAGA - ALGER"
+      }
+    ]
+  },
+  {
+    "id": 10121,
+    "number": "10121",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T14:10:30",
+    "shipping_date": "2025-10-29T14:10:30",
+    "total": "3300000",
+    "shipping_total": "800",
+    "payment_method_title": "Forfait",
+    "billing": {
+      "first_name": "Mehdi",
+      "last_name": "Hamidi",
+      "address_1": "80 RUE MAHMOUD BOUDJATITE",
+      "city": "Alger",
+      "email": "mehdi.hamidi@gmail.com",
+      "phone": "0551890456"
+    },
+    "line_items": [
+      {
+        "name": "TNT 150",
+        "sku": "TNT 150",
+        "quantity": 2,
+        "price": 1650000,
+        "width_cm": 200,
+        "height_cm": 110,
+        "length_cm": 82
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "80 RUE MAHMOUD BOUDJATITE KOUBA/ALGER"
+      }
+    ]
+  },
+  {
+    "id": 10122,
+    "number": "10122",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T15:25:45",
+    "shipping_date": "2025-10-30T15:25:45",
+    "total": "12600000",
+    "shipping_total": "2000",
+    "payment_method_title": "Paiement à la livraison",
+    "billing": {
+      "first_name": "Farida",
+      "last_name": "Mammeri",
+      "address_1": "CITE IBN SINA N°75 RUE ABED ZIN LOC N°01",
+      "city": "ORAN",
+      "email": "farida.mammeri@email.dz",
+      "phone": "0541678234"
+    },
+    "line_items": [
+      {
+        "name": "TRK 502X",
+        "sku": "TRK 02X",
+        "quantity": 5,
+        "price": 2100000,
+        "width_cm": 230,
+        "height_cm": 140,
+        "length_cm": 87
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "CITE IBN SINA N°75 RUE ABED ZIN LOC N°01 ORAN"
+      }
+    ]
+  },
+  {
+    "id": 10129,
+    "number": "10129",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T16:40:20",
+    "shipping_date": "2025-10-26T16:40:20",
+    "total": "9900000",
+    "shipping_total": "1500",
+    "payment_method_title": "Forfait",
+    "billing": {
+      "first_name": "Sofiane",
+      "last_name": "Zerouki",
+      "address_1": "Lotissement Bouchaoui, Villa 23",
+      "city": "Alger",
+      "email": "sofiane.zerouki@yahoo.fr",
+      "phone": "0771234456"
+    },
+    "line_items": [
+      {
+        "name": "TNT 150",
+        "sku": "TNT 150",
+        "quantity": 6,
+        "price": 1650000,
+        "width_cm": 200,
+        "height_cm": 110,
+        "length_cm": 82
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "62A, lotissement des Jeunes Aveugles Cne Draria (W) Alger"
+      }
+    ]
+  },
+  {
+    "id": 10128,
+    "number": "10128",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T17:15:55",
+    "shipping_date": "2025-10-28T17:15:55",
+    "total": "6600000",
+    "shipping_total": "1800",
+    "payment_method_title": "Paiement à la livraison",
+    "billing": {
+      "first_name": "Djamila",
+      "last_name": "Latrech",
+      "address_1": "ité Si El Houas 02 Cne Hassi Messaoud",
+      "city": "Ouargla",
+      "email": "djamila.latrech@gmail.com",
+      "phone": "0661456789"
+    },
+    "line_items": [
+      {
+        "name": "TRK 251",
+        "sku": "TRK 251",
+        "quantity": 4,
+        "price": 1650000,
+        "width_cm": 220,
+        "height_cm": 125,
+        "length_cm": 80
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "Cité Si El Houas 02 Cne Hassi Messaoud (W) Ouargla"
+      }
+    ]
+  },
+  {
+    "id": 10127,
+    "number": "10127",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T17:15:55",
+    "shipping_date": "2025-10-28T17:15:55",
+    "total": "6600000",
+    "shipping_total": "1800",
+    "payment_method_title": "Paiement à la livraison",
+    "billing": {
+      "first_name": "Hassane",
+      "last_name": "Latrech",
+      "address_1": "Cité Si El Houas 02 Cne Hassi Messaoud",
+      "city": "Ouargla",
+      "email": "Hassane.latrech@gmail.com",
+      "phone": "0661456789"
+    },
+    "line_items": [
+      {
+        "name": "TRK 251",
+        "sku": "TRK 251",
+        "quantity": 4,
+        "price": 1650000,
+        "width_cm": 220,
+        "height_cm": 125,
+        "length_cm": 80
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "Cité Si El Houas 02 Cne Hassi Messaoud (W) Ouargla"
+      }
+    ]
+  },
+  {
+    "id": 10126,
+    "number": "10126",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T17:15:55",
+    "shipping_date": "2025-10-28T17:15:55",
+    "total": "16500000",
+    "shipping_total": "1800",
+    "payment_method_title": "Paiement à la livraison",
+    "billing": {
+      "first_name": "Hajer",
+      "last_name": "Latrech",
+      "address_1": "LOTISSEMENT RN N° 04-OUED FEDA",
+      "city": "CHLEF",
+      "email": "djamila.latrech@gmail.com",
+      "phone": "0661456789"
+    },
+    "line_items": [
+      {
+        "name": "TRK 251",
+        "sku": "TRK 251",
+        "quantity": 10,
+        "price": 1650000,
+        "width_cm": 220,
+        "height_cm": 125,
+        "length_cm": 80
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "LOTISSEMENT RN N° 04-OUED FEDA (W) CHLEF"
+      }
+    ]
+  },
+  {
+    "id": 10125,
+    "number": "10125",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T17:15:55",
+    "shipping_date": "2025-10-28T17:15:55",
+    "total": "1650000",
+    "shipping_total": "1800",
+    "payment_method_title": "Paiement à la livraison",
+    "billing": {
+      "first_name": "Mohamed",
+      "last_name": "Latrech",
+      "address_1": "LOTISSEMENT RN N° 04-OUED FEDA",
+      "city": "CHLEF",
+      "email": "djamila.latrech@gmail.com",
+      "phone": "0661456789"
+    },
+    "line_items": [
+      {
+        "name": "TRK 251",
+        "sku": "TRK 251",
+        "quantity": 1,
+        "price": 1650000,
+        "width_cm": 220,
+        "height_cm": 125,
+        "length_cm": 80
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "RN N°04 Zone d'activité Cne Oued Sly (W) Chlef."
+      }
+    ]
+  },
+  {
+    "id": 10155,
+    "number": "10155",
+    "status": "ready for delivery",
+    "date_created": "2025-10-21T17:15:55",
+    "shipping_date": "2025-10-28T17:15:55",
+    "total": "16500000",
+    "shipping_total": "1800",
+    "payment_method_title": "Paiement à la livraison",
+    "billing": {
+      "first_name": "Ibrahim",
+      "last_name": "Latrech",
+      "address_1": "LOCAL 56 KIFFANE RESIDANCE IBN MISSAIB",
+      "city": "TLEMCEN",
+      "email": "djamila.latrech@gmail.com",
+      "phone": "0661456789"
+    },
+    "line_items": [
+      {
+        "name": "TRK 251",
+        "sku": "TRK 251",
+        "quantity": 10,
+        "price": 1650000,
+        "width_cm": 220,
+        "height_cm": 125,
+        "length_cm": 80
+      }
+    ],
+    "shipping_lines": [
+      {
+        "method_title": "LOCAL 56 KIFFANE RESIDANCE IBN MISSAIB(W) TLEMCEN"
       }
     ]
   }
