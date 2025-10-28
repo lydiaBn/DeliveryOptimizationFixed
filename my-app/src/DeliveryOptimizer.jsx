@@ -34,8 +34,6 @@ const DeliveryOptimizer = () => {
       };
 
       console.log('Sending payload:', payload);
-      console.log("WEBHOOK_URL:", WEBHOOK_URL);
-console.log("AUTH_TOKEN:", AUTH_TOKEN);
 
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
