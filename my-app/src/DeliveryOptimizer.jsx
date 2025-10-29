@@ -1,20 +1,44 @@
 import React, { useState } from 'react';
-import { Truck, Package, MapPin, Calendar, Clock, TrendingUp, AlertCircle, CheckCircle, Navigation, Zap, Box, PieChart, AlertTriangle } from 'lucide-react';
-
+import { Truck, Package, MapPin, Calendar, Clock, TrendingUp, AlertCircle, CheckCircle, Navigation, Zap, Box, PieChart, AlertTriangle, Plus, Trash2 } from 'lucide-react';
 
 const WEBHOOK_URL = import.meta.env.VITE_REACT_APP_WEBHOOK_URL; 
 const AUTH_TOKEN = import.meta.env.VITE_REACT_APP_AUTH_TOKEN; 
 
 const DeliveryOptimizer = () => {
   const [orders, setOrders] = useState('');
-  const [plateauLength, setPlateauLength] = useState(7); // meters
-  const [plateauWidth, setPlateauWidth] = useState(4); // meters
-  const [plateauHeight, setPlateauHeight] = useState(2); // meters (less important)
-  const [allowOrderSplitting, setAllowOrderSplitting] = useState(true); // ✅ NEW
+  const [trucks, setTrucks] = useState([
+    { id: 1, name: 'Camion 1', length: 7, width: 4, height: 2 },
+    { id: 1, name: 'Camion 2', length: 10, width: 5, height: 2 },
+    { id: 1, name: 'Camion 3', length: 7, width: 4, height: 2 }
+  ]);
+  const [allowOrderSplitting, setAllowOrderSplitting] = useState(true);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('input');
+
+  const addTruck = () => {
+    const newTruck = {
+      id: trucks.length + 1,
+      name: `Camion ${trucks.length + 1}`,
+      length: 7,
+      width: 4,
+      height: 2
+    };
+    setTrucks([...trucks, newTruck]);
+  };
+
+  const removeTruck = (id) => {
+    if (trucks.length > 1) {
+      setTrucks(trucks.filter(t => t.id !== id));
+    }
+  };
+
+  const updateTruck = (id, field, value) => {
+    setTrucks(trucks.map(t => 
+      t.id === id ? { ...t, [field]: value } : t
+    ));
+  };
 
   const handleOptimize = async () => {
     setLoading(true);
@@ -24,23 +48,26 @@ const DeliveryOptimizer = () => {
       let ordersData;
       try {
         ordersData = JSON.parse(orders);
-      } catch (e) {
-        console.error('JSON parse error:', e);
+      } catch {
         throw new Error('Format JSON invalide. Veuillez vérifier votre saisie.');
       }
 
-        const payload = {
-        orders: Array.isArray(ordersData.orders) ? ordersData.orders : ordersData,
-        plateauDimensions: {
-          length: parseFloat(plateauLength),
-          width: parseFloat(plateauWidth),
-          height: parseFloat(plateauHeight)
+      const fleet = trucks.map(truck => ({
+        truckId: truck.id,
+        truckName: truck.name,
+        dimensions: {
+          length: parseFloat(truck.length),
+          width: parseFloat(truck.width),
+          height: parseFloat(truck.height)
         },
-        maxVolume: parseFloat(plateauLength) * parseFloat(plateauWidth) * parseFloat(plateauHeight),
+        maxVolume: parseFloat(truck.length) * parseFloat(truck.width) * parseFloat(truck.height)
+      }));
+
+      const payload = {
+        orders: Array.isArray(ordersData.orders) ? ordersData.orders : ordersData,
+        fleet: fleet,
         allowOrderSplitting: allowOrderSplitting
       };
-
-      console.log('Sending payload:', payload);
 
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
@@ -53,19 +80,15 @@ const DeliveryOptimizer = () => {
         body: JSON.stringify(payload)
       });
 
-      console.log('Response status:', response.status);
-
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Erreur serveur (${response.status}): ${errorText}`);
       }
       
       const data = await response.json();
-      console.log('Response data:', data);
       setResults(data);
       setActiveTab('results');
     } catch (err) {
-      console.error('Error details:', err);
       if (err.message.includes('Failed to fetch')) {
         setError('Impossible de se connecter au serveur n8n. Vérifiez:\n1. Que le workflow n8n est actif\n2. Que CORS est activé dans les paramètres du webhook\n3. Que l\'URL est correcte');
       } else {
@@ -93,6 +116,18 @@ const DeliveryOptimizer = () => {
       case 'MEDIUM': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
       default: return 'bg-green-100 text-green-800 border-green-300';
     }
+  };
+
+  const getTruckColor = (truckId) => {
+    const colors = [
+      'from-blue-500 to-blue-600',
+      'from-purple-500 to-purple-600',
+      'from-green-500 to-green-600',
+      'from-orange-500 to-orange-600',
+      'from-pink-500 to-pink-600',
+      'from-cyan-500 to-cyan-600'
+    ];
+    return colors[(truckId - 1) % colors.length];
   };
 
   const exampleData =[
@@ -585,9 +620,9 @@ const DeliveryOptimizer = () => {
               </div>
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Optimisation des Itinéraires de Livraison
+                  Optimisation Multi-Camions
                 </h1>
-                <p className="text-gray-600 mt-1">Système intelligent de gestion de tournées basé sur le volume</p>
+                <p className="text-gray-600 mt-1">Système intelligent de gestion de flotte</p>
               </div>
             </div>
             <div className="flex gap-3">
@@ -617,104 +652,129 @@ const DeliveryOptimizer = () => {
         </div>
       </div>
 
-       <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         {activeTab === 'input' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-2xl shadow-xl p-6 border border-indigo-100">
-                <div className="flex items-center gap-3 mb-4">
-                  <Box className="text-indigo-600" size={24} />
-                  <h3 className="text-lg font-semibold text-gray-800">Dimensions du Plateau</h3>
+            <div className="bg-white rounded-2xl shadow-xl p-6 border border-indigo-100">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Truck className="text-indigo-600" size={24} />
+                  <h3 className="text-lg font-semibold text-gray-800">Configuration de la Flotte</h3>
                 </div>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-2">
-                      Longueur (m)
-                    </label>
-                    <input
-                      type="number"
-                      value={plateauLength}
-                      onChange={(e) => setPlateauLength(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 transition-all"
-                      min="1"
-                      step="0.1"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-2">
-                      Largeur (m)
-                    </label>
-                    <input
-                      type="number"
-                      value={plateauWidth}
-                      onChange={(e) => setPlateauWidth(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 transition-all"
-                      min="1"
-                      step="0.1"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-2">
-                      Hauteur (m) <span className="text-xs text-gray-400">(optionnel)</span>
-                    </label>
-                    <input
-                      type="number"
-                      value={plateauHeight}
-                      onChange={(e) => setPlateauHeight(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 transition-all"
-                      min="0.5"
-                      step="0.1"
-                    />
-                  </div>
-                </div>
-
-
-                <div className="mt-4 p-3 bg-indigo-50 rounded-lg">
-                  <p className="text-sm text-indigo-700">
-                    <span className="font-semibold">Volume calculé:</span> {(plateauLength * plateauWidth * plateauHeight).toFixed(2)} m³
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Les motos sont placées sur la surface (longueur × largeur)
-                  </p>
-                </div>
+                <button
+                  onClick={addTruck}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all"
+                >
+                  <Plus size={18} />
+                  Ajouter un camion
+                </button>
               </div>
 
-              {/* ✅ NEW: Order Splitting Toggle */}
-              <div className="bg-white rounded-2xl shadow-xl p-6 border border-indigo-100">
-                <div className="flex items-center gap-3 mb-4">
-                  <PieChart className="text-indigo-600" size={24} />
-                  <h3 className="text-lg font-semibold text-gray-800">Division des Commandes</h3>
-                </div>
-                <label className="flex items-center cursor-pointer">
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      checked={allowOrderSplitting}
-                      onChange={(e) => setAllowOrderSplitting(e.target.checked)}
-                      className="sr-only"
-                    />
-                    <div className={`block w-14 h-8 rounded-full transition-all ${allowOrderSplitting ? 'bg-indigo-600' : 'bg-gray-300'}`}></div>
-                    <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-all ${allowOrderSplitting ? 'transform translate-x-6' : ''}`}></div>
+              <div className="space-y-4">
+                {trucks.map((truck) => (
+                  <div key={truck.id} className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border-2 border-gray-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <input
+                        type="text"
+                        value={truck.name}
+                        onChange={(e) => updateTruck(truck.id, 'name', e.target.value)}
+                        className="text-lg font-semibold bg-transparent border-b-2 border-indigo-300 focus:border-indigo-600 outline-none px-2 py-1"
+                      />
+                      {trucks.length > 1 && (
+                        <button
+                          onClick={() => removeTruck(truck.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-4">
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-2">Longueur (m)</label>
+                        <input
+                          type="number"
+                          value={truck.length}
+                          onChange={(e) => updateTruck(truck.id, 'length', e.target.value)}
+                          className="w-full px-3 py-2 border-2 border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400"
+                          min="1"
+                          step="0.1"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-2">Largeur (m)</label>
+                        <input
+                          type="number"
+                          value={truck.width}
+                          onChange={(e) => updateTruck(truck.id, 'width', e.target.value)}
+                          className="w-full px-3 py-2 border-2 border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400"
+                          min="1"
+                          step="0.1"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-2">Hauteur (m)</label>
+                        <input
+                          type="number"
+                          value={truck.height}
+                          onChange={(e) => updateTruck(truck.id, 'height', e.target.value)}
+                          className="w-full px-3 py-2 border-2 border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400"
+                          min="0.5"
+                          step="0.1"
+                        />
+                      </div>
+                      <div className="flex items-end">
+                        <div className="w-full p-3 bg-indigo-50 rounded-lg">
+                          <div className="text-xs text-indigo-600 mb-1">Volume</div>
+                          <div className="text-lg font-bold text-indigo-700">
+                            {(truck.length * truck.width * truck.height).toFixed(2)} m³
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="ml-3">
-                    <span className="text-sm font-medium text-gray-800">
-                      {allowOrderSplitting ? 'Activé' : 'Désactivé'}
-                    </span>
-                  </div>
-                </label>
-                <p className="text-xs text-gray-500 mt-3">
-                  Permet de diviser les commandes pour optimiser l'utilisation du plateau
-                </p>
+                ))}
               </div>
+
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                <div className="text-sm text-blue-800">
+                  <span className="font-semibold">Capacité totale de la flotte:</span> {trucks.reduce((sum, t) => sum + (t.length * t.width * t.height), 0).toFixed(2)} m³
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-xl p-6 border border-indigo-100">
+              <div className="flex items-center gap-3 mb-4">
+                <PieChart className="text-indigo-600" size={24} />
+                <h3 className="text-lg font-semibold text-gray-800">Division des Commandes</h3>
+              </div>
+              <label className="flex items-center cursor-pointer">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={allowOrderSplitting}
+                    onChange={(e) => setAllowOrderSplitting(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`block w-14 h-8 rounded-full transition-all ${allowOrderSplitting ? 'bg-indigo-600' : 'bg-gray-300'}`}></div>
+                  <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-all ${allowOrderSplitting ? 'transform translate-x-6' : ''}`}></div>
+                </div>
+                <div className="ml-3">
+                  <span className="text-sm font-medium text-gray-800">
+                    {allowOrderSplitting ? 'Activé' : 'Désactivé'}
+                  </span>
+                </div>
+              </label>
+              <p className="text-xs text-gray-500 mt-3">
+                Permet de diviser les commandes entre plusieurs camions
+              </p>
             </div>
 
             <div className="bg-white rounded-2xl shadow-xl p-6 border border-indigo-100">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <Truck className="text-indigo-600" size={24} />
+                  <Package className="text-indigo-600" size={24} />
                   <h3 className="text-lg font-semibold text-gray-800">Commandes à Optimiser</h3>
                 </div>
                 <button
@@ -724,15 +784,11 @@ const DeliveryOptimizer = () => {
                   Charger exemple
                 </button>
               </div>
-              <p className="text-sm text-gray-600 mb-3">
-                Collez vos données de commandes au format JSON (depuis WooCommerce ou votre système). 
-                <span className="font-semibold text-indigo-600"> Assurez-vous que chaque produit inclut volume_m3 ou les trois dimensions de la moto .</span>
-              </p>
               <textarea
                 value={orders}
                 onChange={(e) => setOrders(e.target.value)}
-                placeholder='[{"id": 10115, "status": "ready for delivery", "line_items": [{"volume_m3": 2.8, ...}], ...}]'
-                className="w-full h-96 px-4 py-3 border-2 border-indigo-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 font-mono text-sm transition-all"
+                placeholder='[{"id": 10115, "status": "ready for delivery", ...}]'
+                className="w-full h-64 px-4 py-3 border-2 border-indigo-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 font-mono text-sm transition-all"
               />
             </div>
 
@@ -759,7 +815,7 @@ const DeliveryOptimizer = () => {
               ) : (
                 <>
                   <Zap size={20} />
-                  Optimiser les Tournées
+                  Optimiser la Flotte
                 </>
               )}
             </button>
@@ -768,236 +824,101 @@ const DeliveryOptimizer = () => {
 
         {activeTab === 'results' && results && (
           <div className="space-y-6">
-            {/* ✅ UPDATED: Stats Grid with Volume */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-6 text-white">
                 <div className="flex items-center justify-between mb-2">
                   <Truck size={24} className="opacity-80" />
-                  <TrendingUp size={20} className="opacity-60" />
                 </div>
-                <div className="text-3xl font-bold mb-1">{results.summary.totalBatches}</div>
-                <div className="text-blue-100 text-sm">Tournées créées</div>
+                <div className="text-3xl font-bold mb-1">{results.summary?.trucksUsed || 0}</div>
+                <div className="text-blue-100 text-sm">Camions utilisés</div>
               </div>
 
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white">
                 <div className="flex items-center justify-between mb-2">
-                  <Package size={24} className="opacity-80" />
+                  <Navigation size={24} className="opacity-80" />
                 </div>
-                <div className="text-3xl font-bold mb-1">{results.summary.totalOrders}</div>
-                <div className="text-purple-100 text-sm">Commandes optimisées</div>
+                <div className="text-3xl font-bold mb-1">{results.summary?.totalBatches || 0}</div>
+                <div className="text-purple-100 text-sm">Tournées créées</div>
               </div>
 
-              {/* ✅ NEW: Volume Card */}
               <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl shadow-xl p-6 text-white">
                 <div className="flex items-center justify-between mb-2">
-                  <Box size={24} className="opacity-80" />
+                  <Package size={24} className="opacity-80" />
                 </div>
-                <div className="text-3xl font-bold mb-1">{results.summary.totalVolume} m³</div>
-                <div className="text-cyan-100 text-sm">Volume total</div>
+                <div className="text-3xl font-bold mb-1">{results.summary?.totalOrders || 0}</div>
+                <div className="text-cyan-100 text-sm">Commandes</div>
               </div>
 
               <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-xl p-6 text-white">
                 <div className="flex items-center justify-between mb-2">
-                  <MapPin size={24} className="opacity-80" />
+                  <Box size={24} className="opacity-80" />
                 </div>
-                <div className="text-3xl font-bold mb-1">{results.summary.totalDistance.toFixed(1)} km</div>
-                <div className="text-green-100 text-sm">Distance totale</div>
+                <div className="text-3xl font-bold mb-1">{results.summary?.avgVolumeUtilization || 0}%</div>
+                <div className="text-green-100 text-sm">Utilisation moy.</div>
               </div>
 
-              {/* ✅ NEW: Split Orders Card */}
               <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-xl p-6 text-white">
                 <div className="flex items-center justify-between mb-2">
-                  <PieChart size={24} className="opacity-80" />
+                  <MapPin size={24} className="opacity-80" />
                 </div>
-                <div className="text-3xl font-bold mb-1">{results.summary.totalSplitOrders || 0}</div>
-                <div className="text-orange-100 text-sm">Commandes divisées</div>
+                <div className="text-3xl font-bold mb-1">{results.summary?.totalDistance?.toFixed(1) || 0} km</div>
+                <div className="text-orange-100 text-sm">Distance totale</div>
               </div>
             </div>
 
-            {/* ✅ NEW: Insights Section */}
-            {results.insights && (
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border-2 border-indigo-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <TrendingUp className="text-indigo-600" size={20} />
-                  Insights d'Optimisation
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-white rounded-xl p-4 shadow-sm">
-                    <div className="text-sm text-gray-600 mb-1">Utilisation moyenne du plateau</div>
-                    <div className="text-2xl font-bold text-indigo-600">{results.summary.avgVolumeUtilization}%</div>
-                  </div>
-                  <div className="bg-white rounded-xl p-4 shadow-sm">
-                    <div className="text-sm text-gray-600 mb-1">Tournée la plus efficace</div>
-                    <div className="text-2xl font-bold text-green-600">{results.insights.mostEfficientBatch}</div>
-                  </div>
-                  <div className="bg-white rounded-xl p-4 shadow-sm">
-                    <div className="text-sm text-gray-600 mb-1">Tournées critiques</div>
-                    <div className="text-2xl font-bold text-red-600">{results.insights.criticalBatches}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              {results.batches.map((batch) => (
-                <div key={batch.batchId} className="bg-white rounded-2xl shadow-xl border border-indigo-100 overflow-hidden">
-                  <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 text-white">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg font-mono font-bold">
-                          {batch.batchId}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-lg">Tournée #{batch.batchNumber}</div>
-                          <div className="text-indigo-100 text-sm">
-                            {batch.totalOrders} livraisons • {batch.uniqueZones} zones
-                            {batch.splitOrders > 0 && ` • ${batch.splitOrders} commande(s) divisée(s)`}
-                          </div>
+            {results.truckAssignments && results.truckAssignments.map((truck) => (
+              <div key={truck.truckId} className="bg-white rounded-2xl shadow-xl border-2 border-indigo-100 overflow-hidden">
+                <div className={`bg-gradient-to-r ${getTruckColor(truck.truckId)} px-6 py-4 text-white`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <Truck size={32} />
+                      <div>
+                        <div className="font-bold text-xl">{truck.truckName}</div>
+                        <div className="text-white/80 text-sm">
+                          {truck.batches.length} tournée(s) • {truck.totalOrders} livraisons • {truck.totalVolume} m³
                         </div>
                       </div>
-                      <div className={`px-4 py-2 rounded-lg border-2 font-semibold ${getUrgencyColor(batch.batchUrgencyLevel)}`}>
-                        {translateUrgency(batch.batchUrgencyLevel)}
-                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold">{truck.volumeUtilization}%</div>
+                      <div className="text-white/80 text-sm">Utilisation</div>
                     </div>
                   </div>
+                </div>
 
-                  {/* ✅ UPDATED: Batch Stats with Volume */}
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-6 bg-gray-50 border-b border-gray-200">
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Motos</div>
-                      <div className="text-2xl font-bold text-gray-800">{batch.totalBikes}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Volume</div>
-                      <div className="text-2xl font-bold text-gray-800">{batch.totalVolume} m³</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Utilisation</div>
-                      <div className="text-2xl font-bold text-gray-800">{batch.volumeUtilization}%</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Distance</div>
-                      <div className="text-2xl font-bold text-gray-800">{batch.totalDistance} km</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Montant total</div>
-                      <div className="text-lg font-bold text-gray-800">{batch.totalAmount.toLocaleString()} DA</div>
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                      <Navigation size={18} className="text-indigo-600" />
-                      Itinéraire de livraison
-                    </h4>
-                    <div className="space-y-3">
-                      {batch.deliveryRoute.map((stop) => (
-                        <div key={`${stop.orderId}-${stop.stopNumber}`} className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all">
-                          <div className="flex-shrink-0 w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">
-                            {stop.stopNumber}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-4 mb-2">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <div className="font-semibold text-gray-800">{stop.customerName}</div>
-                                  {/* ✅ NEW: Split Order Indicator */}
-                                  {stop.isPartialDelivery && (
-                                    <span className="px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-700 rounded-md flex items-center gap-1">
-                                      <PieChart size={12} />
-                                      Livraison partielle
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="text-sm text-gray-600">{stop.customerAddress} • {stop.zone}</div>
-                                <div className="text-sm text-gray-500 mt-1">{stop.customerPhone}</div>
-                              </div>
-                              <div className={`px-3 py-1 rounded-lg text-xs font-semibold border ${getUrgencyColor(stop.urgencyLevel)}`}>
-                                {translateUrgency(stop.urgencyLevel)}
-                              </div>
-                            </div>
-
-                            {/* ✅ NEW: Split Order Details */}
-                            {stop.splitInfo && (
-                              <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                                <div className="flex items-center gap-2 text-sm text-orange-800 mb-1">
-                                  <AlertTriangle size={14} />
-                                  <span className="font-semibold">
-                                    Partie {stop.splitInfo.partNumber}/{stop.splitInfo.totalParts} de la commande
-                                  </span>
-                                </div>
-                                <div className="text-xs text-orange-700 space-y-1">
-                                  <div>• Motos dans cette livraison: {stop.splitInfo.bikesInThisPart}</div>
-                                  {stop.splitInfo.bikesRemaining && (
-                                    <div>• Motos restantes: {stop.splitInfo.bikesRemaining} (livraison ultérieure)</div>
-                                  )}
-                                  {stop.splitInfo.bikesFromPreviousPart && (
-                                    <div>• Motos précédentes: {stop.splitInfo.bikesFromPreviousPart} (déjà livrées)</div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* ✅ UPDATED: Stop Info Grid with Volume */}
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-3 text-sm">
-                              <div className="flex items-center gap-2 text-gray-600">
-                                <Package size={14} />
-                                <span>
-                                  {stop.bikesDelivered} moto(s)
-                                  {stop.bikesRemaining > 0 && (
-                                    <span className="text-orange-600 font-semibold"> ({stop.bikesRemaining} restantes)</span>
-                                  )}
-                                </span>
-                              </div>
-                              {/* ✅ NEW: Volume Display */}
-                              <div className="flex items-center gap-2 text-gray-600">
-                                <Box size={14} />
-                                <span>{stop.volume} m³</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-gray-600">
-                                <MapPin size={14} />
-                                <span>{stop.distance} km</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-gray-600">
-                                <Calendar size={14} />
-                                <span>{stop.daysUntilDelivery}j restants</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-gray-600 font-semibold">
-                                {stop.amount.toLocaleString()} DA
-                                {stop.isPartialDelivery && (
-                                  <span className="text-xs text-gray-500">/{stop.totalOrderAmount.toLocaleString()}</span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="mt-2 text-xs text-gray-500">
-                              {stop.products.map(p => `${p.name} (x${p.quantity}${p.volume_m3 ? `, ${p.volume_m3}m³` : ''})`).join(', ')}
-                            </div>
+                <div className="p-6 space-y-4">
+                  {truck.batches.map((batch) => (
+                    <div key={batch.batchId} className="border-2 border-gray-200 rounded-xl overflow-hidden">
+                      <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                        <div className="flex items-center justify-between">
+                          <div className="font-semibold text-gray-800">{batch.batchId}</div>
+                          <div className={`px-3 py-1 rounded-lg text-xs font-semibold ${getUrgencyColor(batch.batchUrgencyLevel)}`}>
+                            {translateUrgency(batch.batchUrgencyLevel)}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {results.skippedOrders && results.skippedOrders.length > 0 && (
-              <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <AlertCircle className="text-yellow-600" size={24} />
-                  <h3 className="text-lg font-semibold text-yellow-800">
-                    Commandes non traitées ({results.skippedOrders.length})
-                  </h3>
-                </div>
-                <div className="space-y-2">
-                  {results.skippedOrders.map((order, idx) => (
-                    <div key={idx} className="text-sm text-yellow-800 bg-white p-3 rounded-lg">
-                      <span className="font-semibold">Commande #{order.orderId}:</span> {order.reason}
+                        <div className="text-sm text-gray-600 mt-1">
+                          {batch.totalOrders} arrêts • {batch.totalVolume} m³ • {batch.totalDistance} km
+                        </div>
+                      </div>
+                      <div className="p-4 space-y-2">
+                        {batch.deliveryRoute.map((stop) => (
+                          <div key={`${stop.orderId}-${stop.stopNumber}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg text-sm">
+                            <div className="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-xs">
+                              {stop.stopNumber}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-800">{stop.customerName}</div>
+                              <div className="text-xs text-gray-600">{stop.zone}</div>
+                            </div>
+                            <div className="text-xs text-gray-600">{stop.bikesDelivered} motos</div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
+            ))}
           </div>
         )}
       </div>
