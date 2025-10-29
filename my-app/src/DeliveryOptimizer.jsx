@@ -7,7 +7,9 @@ const AUTH_TOKEN = import.meta.env.VITE_REACT_APP_AUTH_TOKEN;
 
 const DeliveryOptimizer = () => {
   const [orders, setOrders] = useState('');
-  const [maxVolume, setMaxVolume] = useState(30); // ✅ Updated default to 50m³
+  const [plateauLength, setPlateauLength] = useState(7); // meters
+  const [plateauWidth, setPlateauWidth] = useState(4); // meters
+  const [plateauHeight, setPlateauHeight] = useState(2); // meters (less important)
   const [allowOrderSplitting, setAllowOrderSplitting] = useState(true); // ✅ NEW
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -27,10 +29,15 @@ const DeliveryOptimizer = () => {
         throw new Error('Format JSON invalide. Veuillez vérifier votre saisie.');
       }
 
-      const payload = {
-        orders: Array.isArray(ordersData.orders) ? ordersData.orders : ordersData, // ✅ Changed from 'response' to 'orders'
-        maxVolume: parseFloat(maxVolume), // ✅ Changed from maxBikes
-        allowOrderSplitting: allowOrderSplitting // ✅ NEW
+        const payload = {
+        orders: Array.isArray(ordersData.orders) ? ordersData.orders : ordersData,
+        plateauDimensions: {
+          length: parseFloat(plateauLength),
+          width: parseFloat(plateauWidth),
+          height: parseFloat(plateauHeight)
+        },
+        maxVolume: parseFloat(plateauLength) * parseFloat(plateauWidth) * parseFloat(plateauHeight),
+        allowOrderSplitting: allowOrderSplitting
       };
 
       console.log('Sending payload:', payload);
@@ -162,7 +169,7 @@ const DeliveryOptimizer = () => {
     "number": "10117",
     "status": "ready for delivery",
     "date_created": "2025-10-21T10:22:33",
-    "shipping_date": "2025-10-27T10:22:33",
+    "shipping_date": "2025-10-29T10:22:33",
     "total": "3300500",
     "shipping_total": "1000",
     "payment_method_title": "Paiement à la livraison",
@@ -400,7 +407,7 @@ const DeliveryOptimizer = () => {
     "number": "10128",
     "status": "ready for delivery",
     "date_created": "2025-10-21T17:15:55",
-    "shipping_date": "2025-10-28T17:15:55",
+    "shipping_date": "2025-10-29T17:15:55",
     "total": "6600000",
     "shipping_total": "1800",
     "payment_method_title": "Paiement à la livraison",
@@ -416,7 +423,7 @@ const DeliveryOptimizer = () => {
       {
         "name": "TRK 251",
         "sku": "TRK 251",
-        "quantity": 4,
+        "quantity": 6,
         "price": 1650000,
         "width_cm": 220,
         "height_cm": 125,
@@ -434,7 +441,7 @@ const DeliveryOptimizer = () => {
     "number": "10127",
     "status": "ready for delivery",
     "date_created": "2025-10-21T17:15:55",
-    "shipping_date": "2025-10-28T17:15:55",
+    "shipping_date": "2025-10-29T17:15:55",
     "total": "6600000",
     "shipping_total": "1800",
     "payment_method_title": "Paiement à la livraison",
@@ -468,7 +475,7 @@ const DeliveryOptimizer = () => {
     "number": "10126",
     "status": "ready for delivery",
     "date_created": "2025-10-21T17:15:55",
-    "shipping_date": "2025-10-28T17:15:55",
+    "shipping_date": "2025-10-30T17:15:55",
     "total": "16500000",
     "shipping_total": "1800",
     "payment_method_title": "Paiement à la livraison",
@@ -502,7 +509,7 @@ const DeliveryOptimizer = () => {
     "number": "10125",
     "status": "ready for delivery",
     "date_created": "2025-10-21T17:15:55",
-    "shipping_date": "2025-10-28T17:15:55",
+    "shipping_date": "2025-11-01T17:15:55",
     "total": "1650000",
     "shipping_total": "1800",
     "payment_method_title": "Paiement à la livraison",
@@ -536,7 +543,7 @@ const DeliveryOptimizer = () => {
     "number": "10155",
     "status": "ready for delivery",
     "date_created": "2025-10-21T17:15:55",
-    "shipping_date": "2025-10-28T17:15:55",
+    "shipping_date": "2025-11-01T17:15:55",
     "total": "16500000",
     "shipping_total": "1800",
     "payment_method_title": "Paiement à la livraison",
@@ -552,7 +559,7 @@ const DeliveryOptimizer = () => {
       {
         "name": "TRK 251",
         "sku": "TRK 251",
-        "quantity": 10,
+        "quantity": 15,
         "price": 1650000,
         "width_cm": 220,
         "height_cm": 125,
@@ -610,29 +617,69 @@ const DeliveryOptimizer = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+       <div className="max-w-7xl mx-auto px-6 py-8">
         {activeTab === 'input' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white rounded-2xl shadow-xl p-6 border border-indigo-100">
                 <div className="flex items-center gap-3 mb-4">
                   <Box className="text-indigo-600" size={24} />
-                  <h3 className="text-lg font-semibold text-gray-800">Capacité du Plateau</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">Dimensions du Plateau</h3>
                 </div>
-                <label className="block text-sm text-gray-600 mb-2">
-                  Volume maximal du plateau (m³)
-                </label>
-                <input
-                  type="number"
-                  value={maxVolume}
-                  onChange={(e) => setMaxVolume(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 transition-all"
-                  min="1"
-                  step="0.1"
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  Le volume total que peut contenir le plateau de livraison
-                </p>
+                
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">
+                      Longueur (m)
+                    </label>
+                    <input
+                      type="number"
+                      value={plateauLength}
+                      onChange={(e) => setPlateauLength(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 transition-all"
+                      min="1"
+                      step="0.1"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">
+                      Largeur (m)
+                    </label>
+                    <input
+                      type="number"
+                      value={plateauWidth}
+                      onChange={(e) => setPlateauWidth(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 transition-all"
+                      min="1"
+                      step="0.1"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">
+                      Hauteur (m) <span className="text-xs text-gray-400">(optionnel)</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={plateauHeight}
+                      onChange={(e) => setPlateauHeight(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 transition-all"
+                      min="0.5"
+                      step="0.1"
+                    />
+                  </div>
+                </div>
+
+
+                <div className="mt-4 p-3 bg-indigo-50 rounded-lg">
+                  <p className="text-sm text-indigo-700">
+                    <span className="font-semibold">Volume calculé:</span> {(plateauLength * plateauWidth * plateauHeight).toFixed(2)} m³
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Les motos sont placées sur la surface (longueur × largeur)
+                  </p>
+                </div>
               </div>
 
               {/* ✅ NEW: Order Splitting Toggle */}
