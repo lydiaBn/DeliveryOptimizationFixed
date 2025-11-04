@@ -245,7 +245,7 @@ const DeliveryOptimizer = () => {
     } catch (err) {
       console.error(err);
       setError(
-        err.message || "Erreur lors de l'optimisation"
+        err.message || "Erreur lors de l'optimisation !"
       );
     } finally {
       setLoading(false);
