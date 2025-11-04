@@ -10,9 +10,13 @@ import {
   Send,
   CheckCircle,
   Star,
+   Download,
+   X, 
 } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { Link } from "react-router-dom";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const WEBHOOK_URL = import.meta.env.VITE_REACT_APP_WEBHOOK_URL;
 const AUTH_TOKEN = import.meta.env.VITE_REACT_APP_AUTH_TOKEN;
@@ -45,6 +49,219 @@ const DeliveryOptimizer = () => {
     deliveryTime: false,
     other: false,
   });
+const [feedbackSuccess, setFeedbackSuccess] = useState(false); 
+
+// Improved PDF Export Function with Better Design
+
+const exportResultsToPDF = () => {
+  try {
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 15;
+    let yPosition = margin;
+
+    const addNewPage = () => {
+      pdf.addPage();
+      yPosition = margin;
+    };
+
+    const checkPageBreak = (heightNeeded) => {
+      if (yPosition + heightNeeded > pageHeight - margin) {
+        addNewPage();
+      }
+    };
+
+    // ============ HEADER ============
+    pdf.setFillColor(79, 70, 229); // Indigo background
+    pdf.rect(0, 0, pageWidth, 40, "F");
+
+    pdf.setFontSize(24);
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont(undefined, "bold");
+    pdf.text("RAPPORT D'OPTIMISATION", margin, 15);
+    pdf.text("DES TOURNÉES", margin, 24);
+
+    pdf.setFontSize(10);
+    pdf.setFont(undefined, "normal");
+    pdf.text(`Généré le ${new Date().toLocaleDateString("fr-FR")}`, pageWidth - margin, 20, { align: "right" });
+
+    yPosition = 50;
+
+    // ============ SUMMARY CARDS ============
+    pdf.setTextColor(50, 50, 50);
+    
+    const summaryCards = [
+      { label: "Camions", value: results.summary?.trucksUsed || 0, color: [59, 130, 246] },
+      { label: "Tournées", value: results.summary?.totalBatches || 0, color: [34, 197, 94] },
+      { label: "Commandes", value: results.summary?.totalOrders || 0, color: [168, 85, 247] },
+      { label: "Utilisation", value: `${results.summary?.avgVolumeUtilization || 0}%`, color: [251, 146, 60] },
+      { label: "Distance", value: `${Math.round(results.summary?.avgDistance || 0)} km`, color: [236, 72, 153] },
+    ];
+
+    const cardWidth = (pageWidth - margin * 2 - 4) / 5;
+    let xPosition = margin;
+
+    summaryCards.forEach((card) => {
+      // Card background
+      pdf.setFillColor(...card.color);
+      pdf.rect(xPosition, yPosition, cardWidth, 24, "F");
+
+      // Card text
+      pdf.setFontSize(9);
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont(undefined, "bold");
+      pdf.text(String(card.value), xPosition + cardWidth / 2, yPosition + 12, { align: "center" });
+
+      pdf.setFontSize(7);
+      pdf.setFont(undefined, "normal");
+      pdf.text(card.label, xPosition + cardWidth / 2, yPosition + 18, { align: "center" });
+
+      xPosition += cardWidth + 1;
+    });
+
+    yPosition += 35;
+
+    // ============ TRUCKS SECTION ============
+    pdf.setTextColor(50, 50, 50);
+
+    results.truckAssignments?.forEach((truck, truckIndex) => {
+      checkPageBreak(40);
+
+      // Truck Header with Background
+      pdf.setFillColor(240, 245, 255); // Light blue
+      pdf.rect(margin, yPosition - 2, pageWidth - margin * 2, 12, "F");
+
+      pdf.setFontSize(12);
+      pdf.setTextColor(59, 130, 246);
+      pdf.setFont(undefined, "bold");
+      pdf.text(`${truck.truckName}`, margin + 3, yPosition + 5);
+
+      // Truck Stats
+      pdf.setFontSize(9);
+      pdf.setTextColor(80, 80, 80);
+      pdf.setFont(undefined, "normal");
+      const truckStatsText = `${truck.totalOrders} commande(s) • ${truck.totalVolume} m³ • ${truck.totalBikes || 0} motos • ${truck.volumeUtilization}% utilisé`;
+      pdf.text(truckStatsText, pageWidth - margin - 5, yPosition + 15, { align: "right" });
+
+      yPosition += 15;
+
+      // Batches for this truck
+      truck.batches?.forEach((batch) => {
+        if (!batch || !batch.batchId) return;
+
+        checkPageBreak(50);
+
+        // Batch Header
+        const urgencyColor = 
+          batch.batchUrgencyLevel === "CRITICAL" ? [220, 38, 38] :
+          batch.batchUrgencyLevel === "HIGH" ? [249, 115, 22] :
+          [34, 197, 94];
+
+        pdf.setFillColor(...urgencyColor);
+        pdf.rect(margin + 2, yPosition, 4, 25, "F");
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(50, 50, 50);
+        pdf.setFont(undefined, "bold");
+        pdf.text(`${batch.batchId}`, margin + 8, yPosition + 5);
+
+        pdf.setFontSize(8);
+        pdf.setFont(undefined, "normal");
+        pdf.text(
+          `${batch.batchUrgencyLevel} • ${batch.totalOrders} cde • ${batch.totalVolume || batch.volume} m³ • ${batch.totalDistance || 0} km`,
+          margin + 8,
+          yPosition + 10
+        );
+
+        yPosition += 16;
+
+        // Delivery Stops Table
+        batch.deliveryRoute?.forEach((stop, stopIndex) => {
+          checkPageBreak(15);
+
+          // Stop background alternating
+          if (stopIndex % 2 === 0) {
+            pdf.setFillColor(249, 250, 251);
+            pdf.rect(margin, yPosition - 1, pageWidth - margin * 2, 13, "F");
+          }
+
+          // Stop number badge
+          pdf.setFillColor(79, 70, 229);
+          pdf.setTextColor(255, 255, 255);
+          pdf.setFont(undefined, "bold");
+          pdf.text(String(stop.stopNumber), margin + 2, yPosition + 3);
+
+          // Stop details
+          pdf.setTextColor(50, 50, 50);
+          pdf.setFont(undefined, "bold");
+          pdf.setFontSize(8);
+          pdf.text(`${stop.customerName} (${stop.zone})`, margin + 7, yPosition + 3);
+
+          pdf.setFont(undefined, "normal");
+          pdf.setFontSize(7);
+
+          // Products on same line
+          if (Array.isArray(stop.products) && stop.products.length > 0) {
+            const productsList = stop.products.map((p) => `${p.name}×${p.quantity}`).join(" | ");
+            pdf.text(`Produits: ${productsList}`, margin + 7, yPosition + 7);
+          }
+
+          // Order info
+          const orderInfo = `Cde #${stop.orderId || "—"} • ${stop.totalBikesInOrder || stop.totalBikes || 0} motos • ${stop.volume || 0} m³ • ${stop.distance || 0} km`;
+          pdf.text(orderInfo, margin + 7, yPosition + 10);
+
+          // Right side: Urgency and Days
+          const urgencyColor2 = 
+            stop.urgencyLevel === "CRITICAL" ? [220, 38, 38] :
+            stop.urgencyLevel === "HIGH" ? [249, 115, 22] :
+            [34, 197, 94];
+
+          pdf.setFillColor(...urgencyColor2);
+          pdf.rect(pageWidth - margin - 30, yPosition + 0.5, 28, 4, "F");
+          pdf.setTextColor(255, 255, 255);
+          pdf.setFont(undefined, "bold");
+          pdf.setFontSize(7);
+          pdf.text(`${stop.urgencyLevel}`, pageWidth - margin - 16, yPosition + 2.5, { align: "center" });
+
+          pdf.setTextColor(50, 50, 50);
+          pdf.setFont(undefined, "normal");
+          const daysColor = stop.daysUntilDelivery < 0 ? [220, 38, 38] : stop.daysUntilDelivery <= 2 ? [249, 115, 22] : [34, 197, 94];
+          pdf.setTextColor(...daysColor);
+          pdf.setFont(undefined, "bold");
+          pdf.text(`${stop.daysUntilDelivery} j`, pageWidth - margin - 2, yPosition + 10, { align: "right" });
+
+          yPosition += 13;
+        });
+
+        yPosition += 5;
+      });
+
+      if (truckIndex < results.truckAssignments.length - 1) {
+        yPosition += 5;
+      }
+    });
+
+    // ============ FOOTER ============
+    const pageCount = pdf.internal.pages.length - 1;
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      pdf.setFontSize(8);
+      pdf.setTextColor(150, 150, 150);
+      pdf.text(`Page ${i} sur ${pageCount}`, pageWidth / 2, pageHeight - 10, { align: "center" });
+
+      // Bottom line
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
+    }
+
+    // Save PDF
+    pdf.save(`optimisation_tournees_${new Date().toISOString().split("T")[0]}.pdf`);
+  } catch (err) {
+    console.error("PDF export error:", err);
+    setError("Erreur lors de l'export en PDF");
+  }
+};
 
   // Load data on mount
   useEffect(() => {
@@ -119,32 +336,95 @@ const DeliveryOptimizer = () => {
     );
   };
 
-  // Enrich orders with motorcycle dimensions from database
-  const enrichOrders = (orders) => {
-    return (orders || []).map((order) => {
-      if (Array.isArray(order.line_items)) {
-        order.line_items = order.line_items.map((li) => {
-          // Always try to match from database, ignore any dimensions in the order
-          if (li.name) {
-            const moto = getMotorcycleByName(li.name);
-            if (moto) {
-              // Remove any existing dimensions and use database values
-              const { width_cm: _width_cm, height_cm: _height_cm, length_cm: _length_cm, ...restOfItem } = li;
-              return {
-                ...restOfItem,
-                width_cm: moto.width_cm,
-                height_cm: moto.height_cm,
-                length_cm: moto.length_cm,
-              };
-            }
+// Enrich orders with motorcycle dimensions from database
+// NOW HANDLES: Single products, multiple products per order, and JSON/Excel formats
+
+const enrichOrders = (ordersArray) => {
+  // Group rows by order ID (handles multi-row Excel imports)
+  const groupedByOrderId = {};
+  
+  for (const row of ordersArray) {
+    const orderId = row.id;
+    if (!groupedByOrderId[orderId]) {
+      groupedByOrderId[orderId] = [];
+    }
+    groupedByOrderId[orderId].push(row);
+  }
+
+  // Convert grouped data back to order objects
+  const enrichedOrders = [];
+
+  for (const [_orderId, rows] of Object.entries(groupedByOrderId)) {
+    const firstRow = rows[0]; // Use first row for order-level data
+
+    // CASE 1: JSON format with nested line_items array
+    if (Array.isArray(firstRow.line_items)) {
+      const enrichedLineItems = firstRow.line_items.map((li) => {
+        if (li.name) {
+          const moto = getMotorcycleByName(li.name);
+          if (moto) {
+            return {
+              ...li,
+              width_cm: moto.width_cm,
+              height_cm: moto.height_cm,
+              length_cm: moto.length_cm,
+            };
           }
-          // If no match found, keep original item (might be missing dimensions)
-          return li;
-        });
-      }
-      return order;
-    });
-  };
+        }
+        return li;
+      });
+
+      enrichedOrders.push({
+        ...firstRow,
+        line_items: enrichedLineItems,
+      });
+    }
+    // CASE 2: Excel format - multiple rows per order, one product per row
+    else if (firstRow.line_item_name) {
+      const lineItems = rows.map((row) => {
+        const productName = row.line_item_name;
+        const moto = getMotorcycleByName(productName);
+
+        return {
+          name: productName,
+          sku: row.line_item_sku,
+          quantity: row.line_item_quantity,
+          price: row.line_item_price,
+          width_cm: moto ? moto.width_cm : null,
+          height_cm: moto ? moto.height_cm : null,
+          length_cm: moto ? moto.length_cm : null,
+        };
+      });
+
+      enrichedOrders.push({
+        id: firstRow.id,
+        number: firstRow.number,
+        status: firstRow.status,
+        date_created: firstRow.date_created,
+        shipping_date: firstRow.shipping_date,
+        total: firstRow.total,
+        shipping_total: firstRow.shipping_total,
+        payment_method_title: firstRow.payment_method_title,
+        billing: {
+          first_name: firstRow.billing_first_name,
+          last_name: firstRow.billing_last_name,
+          address_1: firstRow.billing_address_1,
+          city: firstRow.billing_city,
+          email: firstRow.billing_email,
+          phone: firstRow.billing_phone,
+        },
+        line_items: lineItems,
+        shipping_lines: [
+          {
+            method_title: firstRow.shipping_method_title,
+          },
+        ],
+      });
+    }
+  }
+
+  return enrichedOrders;
+};
 
   // Main optimization handler
   const handleOptimize = async () => {
@@ -253,37 +533,43 @@ const DeliveryOptimizer = () => {
   };
 
   // Submit feedback
-  const submitFeedback = async () => {
-    try {
-      setLoading(true);
-      const payload = {
-        rating: parseInt(rating, 10),
-        comment: feedbackText,
-        categories: feedbackCategories,
-        context: results || {},
-        created_at: new Date().toISOString(),
-      };
+ const submitFeedback = async () => {
+  try {
+    setLoading(true);
+    const payload = {
+      rating: parseInt(rating, 10),
+      comment: feedbackText,
+      categories: feedbackCategories,
+      context: results || {},
+      created_at: new Date().toISOString(),
+    };
 
-      const { error } = await supabase.from("feedback").insert(payload);
-      if (error) throw error;
+    const { error } = await supabase.from("feedback").insert(payload);
+    if (error) throw error;
 
-      alert("Merci pour votre retour !");
-      setShowFeedback(false);
-      setRating(0);
-      setFeedbackText("");
-      setFeedbackCategories({
-        routeQuality: false,
-        volumeUtilization: false,
-        deliveryTime: false,
-        other: false,
-      });
-    } catch (err) {
-      console.error(err);
-      setError("Impossible d'envoyer le feedback");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Show success notification instead of alert
+    setFeedbackSuccess(true);
+    setShowFeedback(false);
+    setRating(0);
+    setFeedbackText("");
+    setFeedbackCategories({
+      routeQuality: false,
+      volumeUtilization: false,
+      deliveryTime: false,
+      other: false,
+    });
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      setFeedbackSuccess(false);
+    }, 5000);
+  } catch (err) {
+    console.error(err);
+    setError("Impossible d'envoyer le feedback");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const formatVolumeM3 = (t) =>
     (parseFloat(t.length_m) * parseFloat(t.width_m) * parseFloat(t.height_m)).toFixed(2);
@@ -324,7 +610,67 @@ const DeliveryOptimizer = () => {
           </div>
         </div>
       </div>
+{feedbackSuccess && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    {/* Dark overlay backdrop */}
+    <div 
+      className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+      onClick={() => setFeedbackSuccess(false)}
+    />
+    
+    {/* Centered notification */}
+    <div className="relative animate-in fade-in zoom-in-95 duration-300">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
+        {/* Success Icon */}
+        <div className="flex justify-center mb-4">
+          <div className="relative">
+            {/* Animated circle background */}
+            <div className="absolute inset-0 bg-green-100 rounded-full animate-pulse" />
+            <CheckCircle size={56} className="text-green-500 relative" />
+          </div>
+        </div>
 
+        {/* Content */}
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+          Merci pour votre retour! 🎉
+        </h3>
+        <p className="text-gray-600 mb-6">
+          Votre feedback nous aide à améliorer continuellement notre service de livraison.
+        </p>
+
+        {/* Close button */}
+        <button
+          onClick={() => setFeedbackSuccess(false)}
+          className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
+        >
+          Fermer
+        </button>
+
+        {/* Auto-dismiss progress bar */}
+        <div className="mt-4 h-1 bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-green-400 to-emerald-600"
+            style={{
+              animation: "shrink 5s linear forwards",
+            }}
+          />
+        </div>
+        <p className="text-xs text-gray-400 mt-2">Se ferme automatiquement...</p>
+      </div>
+    </div>
+
+    <style>{`
+      @keyframes shrink {
+        from {
+          width: 100%;
+        }
+        to {
+          width: 0%;
+        }
+      }
+    `}</style>
+  </div>
+)}
       {/* Tab Navigation */}
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex gap-2">
@@ -506,8 +852,20 @@ const DeliveryOptimizer = () => {
           </div>
         )}
 
+
         {activeTab === "results" && results && (
           <div className="space-y-6">
+            {/* NEW: Export Button - Right after Summary Cards */}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={exportResultsToPDF}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold shadow-md transition flex items-center gap-2"
+              >
+                <Download size={20} />
+                Télécharger en PDF
+              </button>
+            </div>
+
            {/* Summary Cards */}
 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
   <StatCard
@@ -823,42 +1181,58 @@ const DeliveryOptimizer = () => {
                         </div>
 
                         {/* products and bikes */}
-                        <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                          <div className="text-s text-gray-600">
-                            <span className="font-medium">Commande</span> #{stop.orderId ?? stop.order_id ?? "—"} •{" "}
-                            <span className="font-medium">{stop.totalBikesInOrder ?? stop.totalBikes ?? stop.bikeCount ?? 0} moto(s)</span>
-                            {Array.isArray(stop.products) && stop.products.length > 0 && (
-                              <div className="text-s text-gray-500 mt-1">{stop.products.map((p) => p.name).join(", ")}</div>
-                            )}
-                          </div>
+<div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+  <div className="text-sm text-gray-600">
+    <span className="font-medium">Commande</span> #{stop.orderId ?? stop.order_id ?? "—"} •{" "}
+    <span className="font-medium">{stop.totalBikesInOrder ?? stop.totalBikes ?? stop.bikeCount ?? 0} moto(s)</span>
+    
+    {/* NEW: Show product breakdown with quantities */}
+    {Array.isArray(stop.products) && stop.products.length > 0 && (
+      <div className="mt-2 space-y-1">
+        {stop.products.map((product, idx) => (
+          <div key={idx} className="text-sm text-gray-700 bg-blue-50 rounded px-2 py-1">
+            <span className="font-semibold text-blue-900">{product.name}</span>
+            <span className="text-blue-700 ml-2">
+              × {product.quantity}
+            </span>
+            {product.sku && (
+              <span className="text-xs text-gray-500 ml-2">
+                ({product.sku})
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
 
-                          <div className="flex items-center gap-3">
-                            {/* daysUntilDelivery pill */}
-                            <div className={`text-xs px-2 py-1 rounded font-semibold ${
-                              stop.daysUntilDelivery < 0 ? "bg-red-100 text-red-700" :
-                              stop.daysUntilDelivery <= 2 ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-700"
-                            }`}>
-                              {typeof stop.daysUntilDelivery !== "undefined" ? `${stop.daysUntilDelivery} j` : "—"}
-                            </div>
+  <div className="flex items-center gap-3">
+    {/* daysUntilDelivery pill */}
+    <div className={`text-xs px-2 py-1 rounded font-semibold ${
+      stop.daysUntilDelivery < 0 ? "bg-red-100 text-red-700" :
+      stop.daysUntilDelivery <= 2 ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-700"
+    }`}>
+      {typeof stop.daysUntilDelivery !== "undefined" ? `${stop.daysUntilDelivery} j` : "—"}
+    </div>
 
-                            {/* urgency pill */}
-                            {stop.urgencyLevel && (
-                              <div className={`text-xs px-2 py-1 rounded font-semibold ${
-                                stop.urgencyLevel === "CRITICAL" ? "bg-red-100 text-red-700" :
-                                stop.urgencyLevel === "HIGH" ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-700"
-                              }`}>
-                                {stop.urgencyLevel}
-                              </div>
-                            )}
+    {/* urgency pill */}
+    {stop.urgencyLevel && (
+      <div className={`text-xs px-2 py-1 rounded font-semibold ${
+        stop.urgencyLevel === "CRITICAL" ? "bg-red-100 text-red-700" :
+        stop.urgencyLevel === "HIGH" ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-700"
+      }`}>
+        {stop.urgencyLevel}
+      </div>
+    )}
 
-                            {/* partial delivery */}
-                            {stop.isPartialDelivery && (
-                              <div className="text-xs px-2 py-1 rounded bg-amber-50 text-amber-700">
-                                🔸 Partiel {stop.bikeCount}/{stop.totalBikesInOrder ?? stop.totalBikes}
-                              </div>
-                            )}
-                          </div>
-                        </div>
+    {/* partial delivery */}
+    {stop.isPartialDelivery && (
+      <div className="text-xs px-2 py-1 rounded bg-amber-50 text-amber-700">
+        🔸 Partiel {stop.bikeCount}/{stop.totalBikesInOrder ?? stop.totalBikes}
+      </div>
+    )}
+  </div>
+</div>
 
                         {/* shipping date */}
                         {stop.shippingDate && (
