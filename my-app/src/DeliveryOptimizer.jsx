@@ -483,18 +483,19 @@ const enrichOrders = (ordersArray) => {
       );
 
       const fleetPayload = selectedTrucks.map((t) => ({
-        truckId: t.id,
-        truckName: t.name,
-        dimensions: {
-          length: parseFloat(t.length_m),
-          width: parseFloat(t.width_m),
-          height: parseFloat(t.height_m),
-        },
-        maxVolume:
-          parseFloat(t.length_m) *
-          parseFloat(t.width_m) *
-          parseFloat(t.height_m),
-      }));
+  truckId: t.id,
+  truckName: t.name,
+  dimensions: {
+    length: parseFloat(t.length_m),
+    width: parseFloat(t.width_m),
+    height: parseFloat(t.height_m),
+  },
+  totalVolume: parseFloat(t.length_m) * parseFloat(t.width_m) * parseFloat(t.height_m),
+  usableVolume: (parseFloat(t.length_m) * parseFloat(t.width_m) * parseFloat(t.height_m)) * 
+                ((t.usable_volume_percentage || 85) / 100),
+  maxVolume: (parseFloat(t.length_m) * parseFloat(t.width_m) * parseFloat(t.height_m)) * 
+             ((t.usable_volume_percentage || 85) / 100),
+}));
 
       const payload = {
         orders: enrichedOrders,

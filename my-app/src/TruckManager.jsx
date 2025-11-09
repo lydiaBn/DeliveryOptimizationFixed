@@ -16,6 +16,7 @@ export default function TruckManager() {
     length_m: "",
     width_m: "",
     height_m: "",
+    usable_volume_percentage: 85, // ✅ ADD THIS LINE
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -53,6 +54,7 @@ export default function TruckManager() {
       length_m: parseFloat(truckForm.length_m),
       width_m: parseFloat(truckForm.width_m),
       height_m: parseFloat(truckForm.height_m),
+      usable_volume_percentage: parseFloat(truckForm.usable_volume_percentage), // ✅ ADD THIS LINE
     };
 
     setLoading(true);
@@ -98,6 +100,7 @@ export default function TruckManager() {
       length_m: "",
       width_m: "",
       height_m: "",
+      usable_volume_percentage: 85, // ✅ ADD THIS LINE
     });
     setError(null);
   };
@@ -109,6 +112,7 @@ export default function TruckManager() {
       length_m: truck.length_m.toString(),
       width_m: truck.width_m.toString(),
       height_m: truck.height_m.toString(),
+      usable_volume_percentage: (truck.usable_volume_percentage || 85).toString(), // ✅ ADD THIS LINE
     });
   };
 
@@ -117,6 +121,13 @@ export default function TruckManager() {
     const w = parseFloat(truckForm.width_m) || 0;
     const h = parseFloat(truckForm.height_m) || 0;
     return (l * w * h).toFixed(2);
+  };
+
+  // ✅ ADD THIS NEW FUNCTION
+  const calculateUsableVolume = () => {
+    const totalVolume = parseFloat(calculateVolume());
+    const percentage = parseFloat(truckForm.usable_volume_percentage) / 100;
+    return (totalVolume * percentage).toFixed(2);
   };
 
   return (
@@ -229,11 +240,103 @@ export default function TruckManager() {
                 </div>
               </div>
 
+              {/* ✅ ADD THIS NEW SECTION - Usable Volume Percentage */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Volume Utilisable (%) *
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="range"
+                    min="50"
+                    max="100"
+                    step="5"
+                    value={truckForm.usable_volume_percentage}
+                    onChange={(e) =>
+                      setTruckForm({
+                        ...truckForm,
+                        usable_volume_percentage: e.target.value,
+                      })
+                    }
+                    className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <span className="text-lg font-bold text-indigo-600 min-w-[50px] text-right">
+                    {truckForm.usable_volume_percentage}%
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Pourcentage de l'espace du camion réellement utilisable (exclut les roues, cabine, équipements)
+                </p>
+
+                {/* Quick Suggestions */}
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setTruckForm({
+                        ...truckForm,
+                        usable_volume_percentage: 92,
+                      })
+                    }
+                    className="px-2 py-1 text-xs bg-gray-100 hover:bg-indigo-50 rounded transition border border-gray-200"
+                  >
+                    📦 Fourgon: 92%
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setTruckForm({
+                        ...truckForm,
+                        usable_volume_percentage: 78,
+                      })
+                    }
+                    className="px-2 py-1 text-xs bg-gray-100 hover:bg-indigo-50 rounded transition border border-gray-200"
+                  >
+                    🚚 Cabine: 78%
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setTruckForm({
+                        ...truckForm,
+                        usable_volume_percentage: 85,
+                      })
+                    }
+                    className="px-2 py-1 text-xs bg-gray-100 hover:bg-indigo-50 rounded transition border border-gray-200"
+                  >
+                    🔧 Standard: 85%
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setTruckForm({
+                        ...truckForm,
+                        usable_volume_percentage: 70,
+                      })
+                    }
+                    className="px-2 py-1 text-xs bg-gray-100 hover:bg-indigo-50 rounded transition border border-gray-200"
+                  >
+                    ⚙️ Complexe: 70%
+                  </button>
+                </div>
+              </div>
+
               {truckForm.length_m && truckForm.width_m && truckForm.height_m && (
-                <div className="p-4 bg-indigo-50 rounded-lg">
-                  <div className="text-sm text-gray-600">Volume total</div>
-                  <div className="text-2xl font-bold text-indigo-600">
-                    {calculateVolume()} m³
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Total Volume */}
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                    <div className="text-xs text-gray-600">Volume Total</div>
+                    <div className="text-2xl font-bold text-blue-600">
+                      {calculateVolume()} m³
+                    </div>
+                  </div>
+
+                  {/* Usable Volume */}
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+                    <div className="text-xs text-gray-600">Volume Utilisable</div>
+                    <div className="text-2xl font-bold text-green-600">
+                      {calculateUsableVolume()} m³
+                    </div>
                   </div>
                 </div>
               )}
@@ -291,13 +394,22 @@ export default function TruckManager() {
                     <div className="text-sm text-gray-600 mt-1">
                       {truck.length_m}m × {truck.width_m}m × {truck.height_m}m
                     </div>
-                    <div className="text-sm text-indigo-600 font-medium mt-1">
-                      {(
-                        truck.length_m *
-                        truck.width_m *
-                        truck.height_m
-                      ).toFixed(2)}{" "}
-                      m³
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      <div className="text-sm text-blue-600 font-medium">
+                        Total: {(truck.length_m * truck.width_m * truck.height_m).toFixed(2)} m³
+                      </div>
+                      <div className="text-sm text-green-600 font-medium">
+                        Utilisable:{" "}
+                        {(
+                          (truck.length_m * truck.width_m * truck.height_m) *
+                          ((truck.usable_volume_percentage || 85) / 100)
+                        ).toFixed(2)}{" "}
+                        m³
+                      </div>
+                    </div>
+                    {/* ✅ ADD THIS - Show percentage */}
+                    <div className="text-xs text-gray-500 mt-1">
+                      Efficacité: {truck.usable_volume_percentage || 85}%
                     </div>
                   </div>
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition">
@@ -330,15 +442,22 @@ export default function TruckManager() {
           <ul className="text-sm text-gray-600 space-y-1">
             <li>• Les dimensions doivent être en mètres (exemple: 7.2m)</li>
             <li>
-              • Le volume est calculé automatiquement (Longueur × Largeur ×
-              Hauteur)
+              • Le volume total est calculé automatiquement (Longueur × Largeur × Hauteur)
             </li>
             <li>
-              • Les camions enregistrés seront disponibles dans l'optimisateur
-              de tournées
+              • Le pourcentage de volume utilisable dépend du type de camion
             </li>
             <li>
-              • Vous pouvez modifier ou supprimer un camion en le sélectionnant
+              • <strong>Fourgons fermés</strong> (92%): espace réellement utilisable presque total
+            </li>
+            <li>
+              • <strong>Camions avec cabine</strong> (78%): la cabine et les roues réduisent l'espace
+            </li>
+            <li>
+              • <strong>Équipements complexes</strong> (70%): racks internes, poulies, etc.
+            </li>
+            <li>
+              • Les camions enregistrés seront disponibles dans l'optimisateur de tournées
             </li>
           </ul>
         </div>
