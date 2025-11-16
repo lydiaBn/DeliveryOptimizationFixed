@@ -44,10 +44,10 @@ const DeliveryOptimizer = () => {
   const [rating, setRating] = useState(0);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackCategories, setFeedbackCategories] = useState({
-    routeQuality: false,
-    volumeUtilization: false,
-    deliveryTime: false,
-    other: false,
+    qualiteItineraire: false,
+    utilisationVolume: false,
+    delaiLivraison: false,
+    autre: false,
   });
 const [feedbackSuccess, setFeedbackSuccess] = useState(false); 
 
@@ -554,10 +554,10 @@ const enrichOrders = (ordersArray) => {
     setRating(0);
     setFeedbackText("");
     setFeedbackCategories({
-      routeQuality: false,
-      volumeUtilization: false,
-      deliveryTime: false,
-      other: false,
+      qualiteItineraire: false,
+    utilisationVolume: false,
+    delaiLivraison: false,
+    autre: false,
     });
 
     // Auto-hide after 5 seconds
